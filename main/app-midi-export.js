@@ -209,7 +209,8 @@ function handleGenerateChordRhythm(returnOnly = false) {
                         chordName: slot.chordName,
                         startTickAbsolute: section.startTick + slot.effectiveStartTickInSection,
                         durationTicks: slot.effectiveDurationTicks,
-                        timeSignature: slot.timeSignature
+                        timeSignature: slot.timeSignature,
+                        sectionType: (section.name || '').toLowerCase()
                     };
                     const eventsForThisSlot = generateChordRhythmEvents(currentMidiData, CHORD_LIB, NOTE_NAMES, helpers, slotContext);
                     if (eventsForThisSlot) {

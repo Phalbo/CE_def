@@ -61,7 +61,8 @@ function generateDrumTrackForSong(
 
     const drumEvents = [];
     const randomActiveGlobal = Math.random() < (options?.globalRandomActivationProbability ?? 0.6);
-    const fillFrequency = options?.fillFrequency ?? 0.25;
+    // fillFrequency is now computed per-section; this is a fallback default
+    const defaultFillFrequency = options?.fillFrequency ?? 0.25;
     const crashOnChordChangeProbability = 0.35;
     const patternVariationOnChordChangeProbability = 0.45;
 
@@ -90,10 +91,16 @@ function generateDrumTrackForSong(
             console.warn("generateDrumTrackForSong: Sezione malformata o senza mainChordSlots, la salto:", section.name);
             return;
         }
-     const sectionTimeSignature = section.timeSignature;
+        const sectionTimeSignature = section.timeSignature;
         const sectionStartTickAbsolute = section.startTick;
         const sectionNameLower = section.name.toLowerCase();
         const sectionMeasures = section.measures;
+
+        // Section-aware fill frequency and variation probability
+        const isChorus = sectionNameLower.includes('chorus');
+        const isBridge = sectionNameLower.includes('bridge');
+        const fillFrequency = isChorus ? 0.50 : (sectionNameLower.includes('verse') ? 0.20 : defaultFillFrequency);
+        const baseVariationProbability = isChorus ? 0.30 : 0.15;
 
         // Seleziona eventuali rhythm pattern generali in base a time signature e tipo sezione
         let chosenGenericRhythm = null;
@@ -177,7 +184,8 @@ function generateDrumTrackForSong(
 
         let currentTimingInstrument = sectionUseRide ? DRUM_MAP_DRUMS_LIB.RIDE : DRUM_MAP_DRUMS_LIB.HH_CLOSED;
         let currentTimingInstrumentVelocity = sectionUseRide ? sectionBasePatternForSection.baseRideVelocity : sectionBasePatternForSection.baseHiHatVelocity;
-
+        // Half-open hi-hat every 4 bars for Bridge, closed/open toggle for others
+        const hiHatAltInstrument = (isBridge && DRUM_MAP_DRUMS_LIB.HH_OPEN) ? DRUM_MAP_DRUMS_LIB.HH_OPEN : DRUM_MAP_DRUMS_LIB.HH_CLOSED;
         let currentMainChordSlotIndex = -1;
 
         for (let barInSection = 0; barInSection < sectionMeasures; barInSection++) {
@@ -186,6 +194,13 @@ function generateDrumTrackForSong(
             const barStartTickAbsolute = sectionStartTickAbsolute + (barInSection * currentTicksPerMeasure);
             let measureSpecificEventsMIDI = [];
             let isFillBar = false;
+
+            // Vary hi-hat pattern every 4 bars
+            if (barInSection > 0 && barInSection % 4 === 0 && !sectionUseRide) {
+                currentTimingInstrument = (currentTimingInstrument === DRUM_MAP_DRUMS_LIB.HH_CLOSED)
+                    ? hiHatAltInstrument : DRUM_MAP_DRUMS_LIB.HH_CLOSED;
+                currentTimingInstrumentVelocity = sectionBasePatternForSection.baseHiHatVelocity;
+            }
 
             const slotStartingThisBar = section.mainChordSlots.find(slot =>
                 (sectionStartTickAbsolute + slot.effectiveStartTickInSection) >= barStartTickAbsolute &&
@@ -255,7 +270,8 @@ function generateDrumTrackForSong(
                             return;
                         }
                         if (variation && typeof variation.apply === "function") {
-                            if (Math.random() < (variation.probability || 0)) {
+                            const effectiveVariationProb = Math.max(variation.probability || 0, baseVariationProbability);
+                            if (Math.random() < effectiveVariationProb) {
                                 currentMeasurePatternEventsRaw = variation.apply(
                                     currentMeasurePatternEventsRaw,
                                     sectionBasePatternForSection,

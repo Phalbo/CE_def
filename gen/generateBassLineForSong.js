@@ -168,7 +168,12 @@ function generateBassPhraseForSlot(context, lastEvent, helpers) {
                     pitch: [pitch],
                     duration: `T${Math.round(actualDuration)}`,
                     startTick: context.startTick + currentTick,
-                    velocity: 75 + Math.floor(Math.random() * 10)
+                    velocity: humanizeVelocity(
+                        ['R', 'R8'].includes(patternElement.p) ? 85 : 65,
+                        12,
+                        (context.startTick + currentTick) % ticksPerBeat,
+                        ticksPerBeat
+                    )
                 });
             }
             currentTick += actualDuration;

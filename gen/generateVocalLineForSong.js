@@ -691,7 +691,7 @@ function generateVocalLineForSong(
                         pitch: [fallbackPitch],
                         duration: `T${fallbackDuration}`,
                         startTick: Math.round(sectionStartTickAbsolute + currentChordSlotStartTickInSection),
-                        velocity: 52
+                        velocity: humanizeVelocity(65, 10)
                     });
                     lastGeneratedMidiPitch = fallbackPitch;
                 }

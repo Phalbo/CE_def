@@ -23,7 +23,7 @@ const MELODY_GENERATION_PARAMS = {
     noteDensity: 0.8, // Fattore di densità delle note (0-1, aumentato)
     maxStepInterval: 4, // Massimo intervallo (in semitoni) per salti melodici comuni
     leapProbability: 0.2, // Probabilità di un salto melodico più ampio
-    rhythmicVarietyPatterns: [ // Durate in multipli di croma (TPQN_MELODY / 2)        [2],       // Semiminima
+    rhythmicVarietyPatterns: [ // Durate in multipli di croma (TPQN_MELODY / 2)
         [1, 1],    // Due crome
         [3, 1],    // Semiminima puntata + Croma
         [1, 3],    // Croma + Semiminima puntata
@@ -31,7 +31,10 @@ const MELODY_GENERATION_PARAMS = {
         [1, 1, 2], // Due crome + Semiminima
         [1, 2, 1], // Croma + Semiminima + Croma
         [4]        // Minima
-    ]
+    ],
+    // Filtered pattern pools by section density
+    sparsePatternsIdx: [2, 6],    // [3,1] and [4] — longer notes for Verse
+    densePatternsIdx: [0, 3, 4],  // [1,1], [2,1,1], [1,1,2] — eighth-dense for Chorus
 };
 
 /**
@@ -89,6 +92,21 @@ function generateMelodyForSong(songMidiData, mainScaleNotes, mainScaleRoot, CHOR
             return;
         }
 
+        // Pick one rhythm pattern for the whole section based on section type density
+        const sectionNameLower = (sectionData.name || '').toLowerCase();
+        let densityPatternPool;
+        if (sectionNameLower.includes('verse') || sectionNameLower.includes('intro')) {
+            densityPatternPool = MELODY_GENERATION_PARAMS.sparsePatternsIdx
+                .map(i => MELODY_GENERATION_PARAMS.rhythmicVarietyPatterns[i]);
+        } else if (sectionNameLower.includes('chorus')) {
+            densityPatternPool = MELODY_GENERATION_PARAMS.densePatternsIdx
+                .map(i => MELODY_GENERATION_PARAMS.rhythmicVarietyPatterns[i]);
+        } else {
+            densityPatternPool = MELODY_GENERATION_PARAMS.rhythmicVarietyPatterns;
+        }
+        const sectionRhythmPattern = getRandomElement_GLOBAL(densityPatternPool)
+            || MELODY_GENERATION_PARAMS.rhythmicVarietyPatterns[0];
+
         sectionData.mainChordSlots.forEach(chordSlot => {
             const chordName = chordSlot.chordName;
             // Calcola il tick di inizio assoluto dello slot sommando l'inizio della sezione e l'inizio relativo dello slot.
@@ -137,7 +155,7 @@ function generateMelodyForSong(songMidiData, mainScaleNotes, mainScaleRoot, CHOR
                     continue;
                 }
 
-                const rhythmicPatternTicks = getRandomElement_GLOBAL(MELODY_GENERATION_PARAMS.rhythmicVarietyPatterns)
+                const rhythmicPatternTicks = sectionRhythmPattern
                                             .map(d => d * MELODY_GENERATION_PARAMS.shortNoteDurationTicks);
 
                 let tickInRhythmicPattern = 0;
@@ -181,15 +199,31 @@ function generateMelodyForSong(songMidiData, mainScaleNotes, mainScaleRoot, CHOR
                             pitch: [targetPitch],
                             duration: `T${Math.round(actualNoteDuration)}`,
                             startTick: slotStartTickAbsolute + currentRelativeTick,
-                            velocity: Math.floor(60 + Math.random() * 20)
+                            velocity: humanizeVelocity(75, 15, (slotStartTickAbsolute + currentRelativeTick) % TPQN_MELODY, TPQN_MELODY)
                         });
                         lastMelodyNotePitch = targetPitch;
                     }
                     tickInRhythmicPattern += actualNoteDuration;
                 }
-                currentTickInSlot += tickInRhythmicPattern;
                 if (tickInRhythmicPattern === 0) {
-                     currentTickInSlot = slotDurationTicks;
+                    // Zero-advance fallback: emit a quarter-note on the chord root
+                    const rootPitchClass = chordToneIndices.length > 0 ? chordToneIndices[0] : scaleNoteIndices[0];
+                    const fallbackPitch = rootPitchClass + MELODY_GENERATION_PARAMS.octaveBase * 12;
+                    const fallbackDuration = Math.min(TPQN_MELODY, slotDurationTicks - currentTickInSlot);
+                    if (fallbackDuration > 0) {
+                        sectionMelody.push({
+                            pitch: [fallbackPitch],
+                            duration: `T${fallbackDuration}`,
+                            startTick: slotStartTickAbsolute + currentTickInSlot,
+                            velocity: humanizeVelocity(72, 10)
+                        });
+                        lastMelodyNotePitch = fallbackPitch;
+                        currentTickInSlot += fallbackDuration;
+                    } else {
+                        currentTickInSlot = slotDurationTicks;
+                    }
+                } else {
+                    currentTickInSlot += tickInRhythmicPattern;
                 }
             }
         });

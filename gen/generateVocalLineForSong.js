@@ -593,11 +593,15 @@ function generateVocalLineForSong(
                 }
 
                 let ticksProcessedInCurrentChordSlot = 0;
+                let consecutivePauseCount = 0;
+                const notesEmittedInSlotStart = sectionVocalLine.length;
                 while (ticksProcessedInCurrentChordSlot < actualChordDurationTicks) {
                     const remainingTicksInChordSlotForEvent = actualChordDurationTicks - ticksProcessedInCurrentChordSlot;
                     if (remainingTicksInChordSlotForEvent < (TPQN_VOCAL / 16)) break;
 
-                    const offsetForEventStart = getStyledStartTick(ticksProcessedInCurrentChordSlot, currentTicksPerBeat, activeVocalStyle, passedGetRandomElementFunc, remainingTicksInChordSlotForEvent);
+                    // Cap start-offset to 1 beat so the singer doesn't stay silent for whole beats
+                    let offsetForEventStart = getStyledStartTick(ticksProcessedInCurrentChordSlot, currentTicksPerBeat, activeVocalStyle, passedGetRandomElementFunc, remainingTicksInChordSlotForEvent);
+                    offsetForEventStart = Math.min(offsetForEventStart, currentTicksPerBeat);
 
                     ticksProcessedInCurrentChordSlot += offsetForEventStart;
                     if (ticksProcessedInCurrentChordSlot >= actualChordDurationTicks) break;
@@ -621,6 +625,18 @@ function generateVocalLineForSong(
                         break;
                     }
 
+                    // Cap consecutive pauses to 2 in a row — prevents multi-bar vocal silences
+                    if (rhythmElement.type !== 'note') {
+                        consecutivePauseCount++;
+                        if (consecutivePauseCount >= 2) {
+                            // Force a note next iteration by consuming the rest quickly
+                            ticksProcessedInCurrentChordSlot += Math.min(durationTicks, currentTicksPerBeat / 2);
+                            consecutivePauseCount = 0;
+                            continue;
+                        }
+                    } else {
+                        consecutivePauseCount = 0;
+                    }
 
                     if (rhythmElement.type === 'note') {
                         let isFalsettoEvent = false;
@@ -662,6 +678,22 @@ function generateVocalLineForSong(
 
                 if (currentMotifStorageForChord && currentMotifStorageForChord.events.length > 0) {
                     storedChorusMotifs_Vocal.push(currentMotifStorageForChord);
+                }
+
+                // Fallback: if the entire slot produced zero notes, emit one sustained root note
+                // at low velocity to avoid complete silence for that chord slot
+                if (sectionVocalLine.length === notesEmittedInSlotStart && actualChordDurationTicks > 0) {
+                    const fallbackOctave = (activeVocalStyle.vocal_register_rules && activeVocalStyle.vocal_register_rules.preferred_octave) || 3;
+                    const fallbackPitch = convertVocalNoteToMidiInternal(chordRootName, NOTE_NAMES_CONST_REF, ALL_NOTES_WITH_FLATS_REF, fallbackOctave)
+                        || (lastGeneratedMidiPitch || 60);
+                    const fallbackDuration = Math.max(currentTicksPerBeat, Math.round(actualChordDurationTicks / 2));
+                    sectionVocalLine.push({
+                        pitch: [fallbackPitch],
+                        duration: `T${fallbackDuration}`,
+                        startTick: Math.round(sectionStartTickAbsolute + currentChordSlotStartTickInSection),
+                        velocity: 52
+                    });
+                    lastGeneratedMidiPitch = fallbackPitch;
                 }
             }); // Fine forEach chordSlot
         }

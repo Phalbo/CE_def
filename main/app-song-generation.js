@@ -193,21 +193,44 @@ function generateChordsForSection(
 
     // Fase 4: Miglioramento dell'Interscambio Modale
     if (songData && songData.enableModalInterchange && MOOD_PROFILES[mood]?.allowedModalBorrowing) {
-        const interchangeChordsMap = getInterchangeChords(keyRoot, currentModeForDiatonicGeneration, true);
+        try {
+            const interchangeChordsMap = getInterchangeChords(keyRoot, currentModeForDiatonicGeneration, true);
 
-        if (Object.keys(interchangeChordsMap).length > 0) {
-            const originalDegrees = [...baseProgressionDegrees];
+            if (Object.keys(interchangeChordsMap).length > 0) {
+                const originalDegrees = [...baseProgressionDegrees];
+                let interchangeApplied = false;
 
-            finalBaseProgression = finalBaseProgression.map((chord, index) => {
-                const originalDegree = originalDegrees[index];
-                const interchangeTarget = interchangeChordsMap[originalDegree];
+                finalBaseProgression = finalBaseProgression.map((chord, index) => {
+                    const originalDegree = originalDegrees[index];
+                    const interchangeTarget = interchangeChordsMap[originalDegree];
+                    // Also check lowercase variant (minor keys use lowercase roman numerals)
+                    const interchangeTargetLower = interchangeChordsMap[originalDegree?.toLowerCase()];
+                    const target = interchangeTarget || interchangeTargetLower;
 
-                if (interchangeTarget && Math.random() < 0.35) {
-                    allGeneratedChordsSet.add(interchangeTarget);
-                    return interchangeTarget;
+                    if (target && Math.random() < 0.45) {
+                        allGeneratedChordsSet.add(target);
+                        interchangeApplied = true;
+                        return target;
+                    }
+                    return chord;
+                });
+
+                if (!interchangeApplied) {
+                    // No eligible degree matched — force-substitute one non-tonic chord
+                    // with any available borrowed chord to make the feature audible
+                    const borrowedChords = Object.values(interchangeChordsMap);
+                    if (borrowedChords.length > 0 && finalBaseProgression.length > 1) {
+                        const replaceIdx = finalBaseProgression.length > 2 ? 2 : 1;
+                        const borrowed = borrowedChords[Math.floor(Math.random() * borrowedChords.length)];
+                        finalBaseProgression[replaceIdx] = borrowed;
+                        allGeneratedChordsSet.add(borrowed);
+                    }
                 }
-                return chord;
-            });
+            } else {
+                console.warn(`Modal interchange: no borrowed chords found for ${keyRoot} ${currentModeForDiatonicGeneration}`);
+            }
+        } catch (err) {
+            console.warn('Modal interchange skipped due to error:', err);
         }
     }
 

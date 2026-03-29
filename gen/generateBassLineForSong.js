@@ -138,17 +138,23 @@ function generateBassPhraseForSlot(context, lastEvent, helpers) {
     const selectedPattern = getRandomElement(patterns);
     const rhythmPattern = selectedPattern.pattern;
 
+    // Max rest duration: 1 beat — prevents audible multi-beat gaps in the bass
+    const MAX_REST_TICKS = ticksPerBeat;
+
     let currentTick = 0;
     while (currentTick < durationTicks) {
         rhythmPattern.forEach((patternElement, index) => {
             if (currentTick >= durationTicks) return;
 
-            const durationInTicks = patternElement.d * ticksPerBeat;
-            const actualDuration = Math.min(durationInTicks, durationTicks - currentTick);
+            const isRest = patternElement.p === 'rest';
+            const rawDurationTicks = patternElement.d * ticksPerBeat;
+            // Cap rests to MAX_REST_TICKS so a single rest never causes a gap longer than 1 beat
+            const cappedDurationTicks = isRest ? Math.min(rawDurationTicks, MAX_REST_TICKS) : rawDurationTicks;
+            const actualDuration = Math.min(cappedDurationTicks, durationTicks - currentTick);
 
             if (actualDuration <= 0) return;
 
-            if (patternElement.p !== 'rest') {
+            if (!isRest) {
                 let pitch = getPitchFromSymbol(patternElement.p, {
                     chordName,
                     lastNote: phraseEvents.length > 0 ? phraseEvents[phraseEvents.length - 1] : lastEvent,
@@ -167,6 +173,17 @@ function generateBassPhraseForSlot(context, lastEvent, helpers) {
             }
             currentTick += actualDuration;
         });
+    }
+
+    // Extend the last note to fill any trailing gap up to the slot boundary
+    if (phraseEvents.length > 0) {
+        const lastEv = phraseEvents[phraseEvents.length - 1];
+        const lastEvDuration = parseInt(lastEv.duration.slice(1), 10);
+        const lastEvEnd = lastEv.startTick - context.startTick + lastEvDuration;
+        const trailingGap = durationTicks - lastEvEnd;
+        if (trailingGap > 0) {
+            lastEv.duration = `T${lastEvDuration + trailingGap}`;
+        }
     }
 
     return phraseEvents;

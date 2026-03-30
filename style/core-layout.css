@@ -1,7 +1,6 @@
-/* File: core-layout.css */
-/* Stili fondamentali, reset, variabili CSS globali, layout di base. */
+/* File: core-layout.css — v5.2 */
+/* Reset, CSS variables, base layout. */
 
-/* === RESET AND BASE STYLES === */
 *,
 *::before,
 *::after {
@@ -11,137 +10,139 @@
 }
 
 :root {
-  /* Palette Colori Primari App */
-  --bg-primary: #0D0F12;
-  --bg-secondary: #1A1D24;
-  --bg-tertiary: #2C313A;
-  --bg-surface: #22262E;
-  --bg-overlay: rgba(13, 15, 18, 0.9);
+  /* === v5.2 Palette — WCAG 2.1 AA compliant === */
+  --bg-primary:    #0F1117;
+  --bg-secondary:  #1A1D27;
+  --bg-tertiary:   #222636;
+  --bg-surface:    #1E2130;
+  --bg-overlay:    rgba(15, 17, 23, 0.92);
 
-  --text-primary: #EAEBF0;
-  --text-secondary: #A0A7B8;
-  --text-muted: #788094;
-  --text-on-accent-dark: #FFFFFF;
-  --text-on-accent-light: #0D0F12;
+  --text-primary:   #F0EEE8;
+  --text-secondary: #8A8FA8;
+  --text-muted:     #5A5F78;
+  --text-on-dark:   #FFFFFF;
+  --text-on-accent: #FFFFFF;
 
-  /* ACCENTI */
-  --accent-primary: #20c997;
-  --accent-primary-hover: #1baa80;
-  --accent-primary-focus-shadow: rgba(32, 201, 151, 0.4);
-  --accent-secondary: #FF4081;
-  --accent-secondary-hover: #E03070;
+  /* Accent indigo (electric) */
+  --accent:             #7C6AF7;
+  --accent-hover:       #9180F9;
+  --accent-active:      #6355D4;
+  --accent-subtle:      rgba(124, 106, 247, 0.12);
+  --accent-focus-ring:  rgba(124, 106, 247, 0.38);
 
-  /* Pulsanti Azione Specifici (Colori Base per riferimento, usati in components.css) */
-  --btn-save-bg: #28A745;
-  --btn-save-hover-bg: #218838;
-  --btn-chords-pad-bg: #FFC107;
-  --btn-chords-pad-hover-bg: #E0A800;
-  --btn-chords-pad-text: #121212;
-  --btn-chords-rhythm-bg: #FFFFFF;
-  --btn-chords-rhythm-text: var(--bg-primary);
-  --btn-chords-rhythm-hover-bg: #e0e0e0;
-  --btn-melody-bg: #FD7E14;
-  --btn-melody-hover-bg: #E06C0E;
-  --btn-vocal-bg: #DC3545;
-  --btn-vocal-hover-bg: #C82333;
-  --btn-bass-bg: #17A2B8;
-  --btn-bass-hover-bg: #138496;
-  --btn-drums-bg: #6F42C1;
-  --btn-drums-hover-bg: #5A32A3;
-  --btn-disabled-bg: #343A40;
-  --btn-disabled-text: #6C757D;
+  /* Accent warm (amber — use sparingly) */
+  --accent-warm:        #E8A24A;
+  --accent-warm-subtle: rgba(232, 162, 74, 0.12);
 
-  /* Spacing, Typography, Borders */
-  --space-xxs: 0.3rem;
-  --space-xs: 0.6rem;
-  --space-sm: 0.9rem;
-  --space-md: 1.25rem;
-  --space-lg: 1.875rem;
-  --space-xl: 2.5rem;
-  --space-xxl: 3.75rem;
+  /* Borders */
+  --border:       #2A2D3A;
+  --border-hover: #3D4158;
 
-  --font-primary: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-  --font-headings: 'Rajdhani', 'Helvetica Neue', Arial, sans-serif;
+  /* Section palette (v5.2) */
+  --section-color-intro:       #4A7FA5;
+  --section-color-verse:       #5A9A6E;
+  --section-color-prechorus:   #7A8A9A;
+  --section-color-chorus:      #9A5A9A;
+  --section-color-chorusdouble:#A86AAB;
+  --section-color-finalchorus: #B878B8;
+  --section-color-bridge:      #A57A4A;
+  --section-color-bridgemod:   #B58E5A;
+  --section-color-middle8:     #9A7A3A;
+  --section-color-breakdown:   #6A5490;
+  --section-color-solo:        #A55A5A;
+  --section-color-guitarsolo:  #B56A6A;
+  --section-color-noisesolo:   #706878;
+  --section-color-glitchsolo:  #8878A8;
+  --section-color-instrumental:#4A6A8A;
+  --section-color-outro:       #5A7AA5;
+  --section-color-outroquiet:  #4A6888;
+  --section-color-outrosospeso:#6878A0;
+  --section-color-screamoutro: #8A3B4B;
+  --section-color-fadeout:     #4A4F5A;
+  --section-color-coda:        #726878;
+  --section-color-slamend:     #383838;
+  --section-color-sonicend:    #52595E;
+  --section-color-finalshout:  #A03838;
+  --section-color-end:         #282828;
+  --section-color-refrain:     #4A867F;
+  --section-color-interlude:   #745C9A;
+  --section-color-noiseinterlude:  #7A7F8A;
+  --section-color-ambientinterlude: #888FA0;
+  --section-color-experimentalinterlude: #9484AA;
+  --section-color-droneinterlude: #686A80;
+  --section-color-sonicinterlude: #707888;
+  --section-color-screaminterlude: #9A4E5A;
+  --section-color-silence:     #1C1C22;
+  --section-color-glitchsection: #A888AE;
+  --section-color-glitch:      #9E74AB;
+  --section-color-ambientloop: #748898;
+  --section-color-texture:     #8A93A8;
+  --section-color-fragment:    #5C6A70;
+  --section-color-spoken:      #8A9088;
+  --section-color-soundscape:  #546070;
+  --section-color-disruption:  #883838;
+  --section-color-reverse:     #2E4050;
+  --section-color-noise:       #585858;
+  --section-color-fade:        #383838;
+  --section-color-parta:       #4A6E65;
+  --section-color-partb:       #5A7E72;
+  --section-color-partc:       #689880;
+  --section-color-default:     #3A3F50;
+
+  /* Spacing */
+  --space-xxs: 0.25rem;
+  --space-xs:  0.5rem;
+  --space-sm:  0.75rem;
+  --space-md:  1.125rem;
+  --space-lg:  1.75rem;
+  --space-xl:  2.5rem;
+  --space-xxl: 3.5rem;
+
+  /* Typography */
+  --font-primary:   'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-display:   'DM Serif Display', Georgia, serif;
+  --font-headings:  'Inter', 'Helvetica Neue', Arial, sans-serif;
   --font-monospace: 'Fira Code', 'Courier New', monospace;
-  --font-size-base: 16px;
-  --line-height-base: 1.7;
+  --font-size-base: 15px;
+  --line-height-base: 1.65;
 
-  --border-radius-sm: 6px;
-  --border-radius-md: 10px;
-  --border-radius-lg: 16px;
+  /* Radii */
+  --radius-sm: 5px;
+  --radius-md: 9px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
 
-  --transition-std: all 0.3s ease-out;
+  /* Keep legacy aliases so existing components.css references work */
+  --border-radius-sm: var(--radius-sm);
+  --border-radius-md: var(--radius-md);
+  --border-radius-lg: var(--radius-lg);
+  --border-primary:   var(--border);
+  --border-secondary: var(--border-hover);
+  --bg-overlay-color: var(--bg-overlay);
 
+  /* Transitions */
+  --transition-fast: all 0.15s ease;
+  --transition-std:  all 0.22s ease;
+
+  /* Z-index layers */
   --z-background: -1;
-  --z-default: 1;
-  --z-sticky: 100;
-  --z-modal: 1000;
+  --z-default:    1;
+  --z-sticky:     100;
+  --z-modal:      1000;
+  --z-toast:      9999;
 
-  --border-primary: #383E4A;
-  --border-secondary: #4F586B;
-
-  /* Variabili per Stile Sezioni Timeline (usate in components.css) */
-  --default-darken: rgba(0, 0, 0, 0.45);
-  --bar-unit-width: 35px; /* Larghezza per MISURA visiva nella timeline */
-  --min-section-bar-display: 4; /* Minimo "misure" visuali per la larghezza della card */
+  /* Timeline */
+  --bar-unit-width: 36px;
+  --min-section-bar-display: 4;
   --section-height: 180px;
   --section-height-mobile: 200px;
-
-  /* Colori Sezioni (Nomi normalizzati per CSS, usati in components.css) */
-  --section-color-intro: #334a6d;
-  --section-color-verse: #3d7361;
-  --section-color-prechorus: #7b9e8b;
-  --section-color-chorus: #ad3e3e;
-  --section-color-chorusdouble: #c24d4d;
-  --section-color-finalchorus: #d95f5f;
-  --section-color-middle8: #da7d3c;
-  --section-color-bridge: #cc8039;
-  --section-color-bridgemod: #d99450;
-  --section-color-breakdown: #6a4e8c;
-  --section-color-solo: #2d8697;
-  --section-color-guitarsolo: #3794a2;
-  --section-color-noisesolo: #6a7d89;
-  --section-color-glitchsolo: #857ba1;
-  --section-color-instrumental: #466d8a;
-  --section-color-outro: #734b83;
-  --section-color-outroquiet: #6a3c70;
-  --section-color-outrosospeso: #875f94;
-  --section-color-screamoutro: #8c3b4b;
-  --section-color-fadeout: #4b4f57;
-  --section-color-coda: #75667c;
-  --section-color-slamend: #373737;
-  --section-color-sonicend: #555d64;
-  --section-color-finalshout: #a0383a;
-  --section-color-end: #292929;
-  --section-color-refrain: #4f867f;
-  --section-color-interlude: #775f9c;
-  --section-color-noiseinterlude: #7a7f8a;
-  --section-color-ambientinterlude: #8a91a2;
-  --section-color-experimentalinterlude: #9686ab;
-  --section-color-droneinterlude: #6a6d85;
-  --section-color-sonicinterlude: #737c91;
-  --section-color-screaminterlude: #9d4f5d;
-  --section-color-silence: #1c1c1c;
-  --section-color-glitchsection: #b28fb0;
-  --section-color-glitch: #a076af;
-  --section-color-ambientloop: #7889a1;
-  --section-color-texture: #919aad;
-  --section-color-fragment: #5f6d73;
-  --section-color-spoken: #8f978c;
-  --section-color-soundscape: #56687a;
-  --section-color-disruption: #893939;
-  --section-color-reverse: #2e4151;
-  --section-color-noise: #5c5c5c;
-  --section-color-fade: #3a3a3a;
-  --section-color-parta: #4c7269;
-  --section-color-partb: #5c8577;
-  --section-color-partc: #6a9b88;
-  --section-color-default: #444444; /* Colore di fallback */
+  --default-darken: rgba(0,0,0,0.35);
 }
 
 html {
   font-size: var(--font-size-base);
   scroll-behavior: smooth;
+  color-scheme: dark;
 }
 
 body {
@@ -157,29 +158,51 @@ body {
   overflow-x: hidden;
 }
 
+/* ===  HEADER — compact, 64px desktop / 56px mobile === */
 header {
-  background-color: rgba(18, 20, 26, 0.7); /* Sfondo semi-trasparente */
-  backdrop-filter: blur(10px); /* Effetto blur per browser supportati */
-  color: var(--text-secondary);
-  padding: var(--space-md) var(--space-lg);
-  text-align: center;
-  border-bottom: 1px solid var(--border-primary);
+  background: rgba(15, 17, 23, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 var(--space-lg);
+  height: 64px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  position: sticky; /* Header fisso in alto */
+  gap: var(--space-sm);
+  position: sticky;
   top: 0;
   z-index: var(--z-sticky);
   width: 100%;
 }
 
+#appLogo {
+  height: 38px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+header .version-badge {
+  font-size: 0.7em;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border: 1px solid rgba(124, 106, 247, 0.3);
+  border-radius: var(--radius-full);
+  padding: 2px 8px;
+  flex-shrink: 0;
+}
+
+header p {
+  display: none; /* Hide old subtitle — version badge replaces it */
+}
+
 main {
-  flex: 1; /* Occupa lo spazio rimanente */
+  flex: 1;
   padding: var(--space-md);
   width: 100%;
-  max-width: 1600px; /* Limita la larghezza massima del contenuto */
-  margin: var(--space-md) auto; /* Centra il contenuto nella pagina */
+  max-width: 1440px;
+  margin: var(--space-md) auto;
 }
 
 footer {
@@ -188,178 +211,75 @@ footer {
   text-align: center;
   background: var(--bg-primary);
   color: var(--text-muted);
-  font-size: 0.9em;
-  border-top: 1px solid var(--border-primary);
+  font-size: 0.85em;
+  border-top: 1px solid var(--border);
 }
 
-/* Stili Titoli Generali */
-h1, h2,
-.section-header-title, /* Classe comune per i titoli delle sezioni principali */
-#midiDownloadTitle,    /* Titolo per la sezione download MIDI */
-.chord-glossary-title { /* Titolo per il glossario accordi */
-  font-family: var(--font-headings);
-  margin-top: var(--space-lg);
-  margin-bottom: var(--space-md);
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--accent-primary);
-  letter-spacing: 0.5px;
-}
-
-h1 { font-size: 2.8rem; text-transform: uppercase; }
-h2 { font-size: 2.2rem; }
-
-/* Stili per i titoli specifici dentro l'output della canzone */
-#songOutput > h3, /* Titolo canzone "Phalbo Caprice..." */
+/* === HEADINGS === */
+h1, h2, h3,
 .section-header-title,
 #midiDownloadTitle,
 .chord-glossary-title {
-  font-size: 1.9rem; /* Dimensione per i titoli principali di sezione */
-  text-align: center;
-  margin-top: var(--space-xl);
-  margin-bottom: var(--space-lg);
+  font-family: var(--font-headings);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
 }
 
-#songOutput > h3 { /* Specifico per il titolo della canzone generata */
-    margin-top: 0; /* Rimuove margine sopra se è il primo elemento in #songOutput */
-    margin-bottom: var(--space-md);
-}
+h1 { font-size: 2.4rem; }
+h2 { font-size: 1.9rem; }
 
-p {
+.song-title-main {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  letter-spacing: 0;
   margin-bottom: var(--space-sm);
 }
+
+#songOutput > h3,
+.section-header-title,
+#midiDownloadTitle,
+.chord-glossary-title {
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-secondary);
+  margin-top: var(--space-xl);
+  margin-bottom: var(--space-md);
+}
+
+#songOutput > h3 { margin-top: 0; }
+
+p { margin-bottom: var(--space-sm); }
 
 a {
-  color: var(--accent-primary);
+  color: var(--accent);
   text-decoration: none;
-  transition: var(--transition-std);
+  transition: var(--transition-fast);
 }
-a:hover, a:focus {
-  color: var(--accent-primary-hover);
-  text-decoration: none; /* Mantiene senza sottolineatura */
-  filter: brightness(1.2); /* Leggero effetto hover */
-}
+a:hover { color: var(--accent-hover); }
 
-/* Stile per `code` e testo simile (es. note accordo nel glossario) */
 code,
-#songOutput .chord-entry code { /* Rende più specifico per il glossario */
+#songOutput .chord-entry code {
   font-family: var(--font-monospace);
-  background-color: var(--bg-tertiary);
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--border-radius-sm);
-  font-size: 0.9em;
-  color: var(--text-primary);
-  border: 1px solid var(--border-secondary);
-  word-break: break-all;
-  display: block;
-  margin-bottom: var(--space-sm);
-  text-align: left;
+  background: var(--bg-tertiary);
+  padding: 2px var(--space-xs);
+  border-radius: var(--radius-sm);
+  font-size: 0.88em;
+  color: var(--accent-warm);
 }
 
-/* Media Queries Generali per Adattabilità Layout Base */
-@media(max-width:1024px) { /* Tablet */
-  main {
-    padding: var(--space-md);
-  }
-  header p {
-    font-size: 0.9em;
-  }
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  header { height: 56px; padding: 0 var(--space-md); }
+  #appLogo { height: 30px; }
+  main { padding: var(--space-sm); margin: var(--space-sm) auto; }
 }
 
-@media(max-width:767px){ /* Mobile */
-  body {
-    font-size: 14px; /* Riduci dimensione base font per mobile */
-  }
-  main {
-    padding: var(--space-sm);
-    margin-top: var(--space-sm);
-    margin-bottom: var(--space-sm);
-  }
-  header p {
-    font-size: 0.8em;
-  }
-
-  /* Riduci dimensione titoli principali su mobile */
-  #songOutput > h3,
-  .section-header-title,
-  #midiDownloadTitle,
-  .chord-glossary-title {
-    font-size: 1.6rem;
-    margin-top: var(--space-lg);
-    margin-bottom: var(--space-md);
-  }
-  h1 { font-size: 2.2rem; }
-  h2 { font-size: 1.8rem; }
-}
-footer { 
-  margin-top: var(--space-md); 
-  padding: var(--space-lg) var(--space-md); 
-  text-align: center;
-  background: var(--bg-primary);
-  color: var(--text-muted);
-  font-size: 0.9em;
-  border-top: 1px solid var(--border-primary);
-}
-
-/* Media Queries Generali Adattate */
-@media(max-width:1024px) { /* Tablet */
-  main { padding: var(--space-md); } 
-  .main-content-section, #input-controls-section, #song-output-container, #main-scale-display-section, #chord-glossary-section { 
-    padding: var(--space-md); 
-    margin-bottom: var(--space-md); 
-  }
-  #appLogo { height: 160px; margin-bottom:var(--space-sm); } 
-  header p { font-size: 0.9em; }
-
-  .song-sections-timeline { min-height: calc(var(--section-height) + 5px); padding-bottom: var(--space-xs); }
-  .diagram.main-scale-guitar, .diagram.main-scale-piano { max-width: 100%; height: 200px; }
-  .action-buttons-container button { min-width: 120px; font-size: 0.75em; padding: var(--space-xs); }
-  .chord-glossary-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } 
-}
-
-@media(max-width:767px){ /* Mobile */
-  body { font-size: 14px; } 
-  main { padding: var(--space-sm); margin-top: var(--space-sm); margin-bottom: var(--space-sm); }
-  .main-content-section, #input-controls-section, #song-output-container, #main-scale-display-section, #chord-glossary-section { 
-    padding: var(--space-sm); margin-bottom: var(--space-sm); 
-  }
-  #appLogo { height: 120px; }
-  header p { font-size: 0.8em; }
-  
-  .song-sections-timeline { min-height: calc(var(--section-height-mobile) + 5px); padding-bottom: var(--space-xs); }
-  .timeline-section-card {
-      height: var(--section-height-mobile); 
-      font-size: 11px !important; 
-      margin-right: 3px;
-  }
-   .timeline-section-card .section-card-header { font-size: 17px; height: 36px; padding: 0 var(--space-xs); }
-   .timeline-section-card .section-card-chords-label { font-size: 14px; }
-  .timeline-section-card .section-card-chords { font-size: 12px; line-height: 1.2; }
-  .timeline-section-card .section-bars-label { font-size: 9px; }
-
-  #main-scale-display-section { padding: var(--space-sm); margin-bottom: var(--space-md); }
-  #main-scale-display-section h3 { font-size: 1.4rem; margin-bottom: var(--space-sm); }
-  #main-scale-display-section > p { font-size: 0.95em; margin-bottom: var(--space-md); }
-  .diagram.main-scale-guitar { height: auto; min-height:140px; }
-  .diagram.main-scale-piano { height: auto; min-height:80px; }
-
-  .chord-glossary-grid { grid-template-columns: 1fr; gap: var(--space-sm); margin-bottom: var(--space-md); }
-  .chord-entry { font-size: 0.8em; padding: var(--space-sm); }
-  .chord-entry code { font-size: 0.9em; }
-  .shape-navigation-controls { margin-top: var(--space-sm); }
-  .shape-nav-arrow { width: 24px; height: 24px; line-height: 22px; font-size: 0.8em;}
-  .shape-position-indicator { font-size: 0.7em; min-width: 45px; }
-
-  .action-buttons-container { flex-wrap: wrap; justify-content: center; gap: 3px; }
-  .action-buttons-container button {
-    width: calc(50% - 3px); 
-    min-width: 90px;
-    margin-bottom: 3px;
-    font-size: 0.65em; 
-    padding: var(--space-xs) 3px;
-  }
-}
-
-@media(max-width:480px) {
-  .action-buttons-container button { width: 100%; }
+@media (max-width: 375px) {
+  header { height: 52px; padding: 0 var(--space-sm); }
+  #appLogo { height: 26px; }
 }

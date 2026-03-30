@@ -34,7 +34,8 @@ function updateChordEntryDisplay(fundamentalChordName) {
         chordData.currentShapeIndex = 0;
     }
 
-    const randomIndex = Math.floor(Math.random() * chordData.shapes.length);
+    const rng = (typeof seededRandom === 'function') ? seededRandom : Math.random;
+    const randomIndex = Math.floor(rng() * chordData.shapes.length);
     const currentShape = chordData.shapes[randomIndex];
     chordData.currentShapeIndex = randomIndex;
 
@@ -221,8 +222,47 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
     output += `  <h3 class="chord-glossary-title section-header-title">Used Chords Glossary:</h3>`;
     output += `  <div class="chord-glossary-grid" id="chord-glossary-grid-container">`;
 
+    // Build section-to-chords map (preserve section order, deduplicate per section)
+    const sectionChordMap = []; // [{name, cleanName, chords:[]}]
+    const seenInSection = {}; // sectionCleanName -> Set of chord names
+    sections.forEach(sd => {
+        if (!sd.mainChordSlots || sd.mainChordSlots.length === 0) return;
+        const cleanName = getCleanSectionName(sd.name);
+        if (!seenInSection[cleanName]) {
+            seenInSection[cleanName] = new Set();
+            sectionChordMap.push({ name: sd.name.replace(/-/g, ' '), cleanName, chords: [] });
+        }
+        const entry = sectionChordMap.find(e => e.cleanName === cleanName);
+        sd.mainChordSlots.forEach(slot => {
+            const cn = slot.chordName;
+            if (cn && !seenInSection[cleanName].has(cn) && allGeneratedChordsSet.has(cn)) {
+                seenInSection[cleanName].add(cn);
+                entry.chords.push(cn);
+            }
+        });
+    });
+
+    // Render grouped glossary with section headers
+    const globalRendered = new Set();
+    sectionChordMap.forEach(sectionGroup => {
+        if (sectionGroup.chords.length === 0) return;
+        const colorVar = `var(--section-color-${sectionGroup.cleanName}, var(--section-color-default))`;
+        output += `<div class="glossary-section-header">`;
+        output += `<span class="glossary-section-badge" style="background:${colorVar}">${sectionGroup.name}</span>`;
+        output += `<span class="glossary-section-line"></span>`;
+        output += `</div>`;
+        sectionGroup.chords.forEach(fundamentalChordName_normalized => {
+            if (globalRendered.has(fundamentalChordName_normalized)) return;
+            globalRendered.add(fundamentalChordName_normalized);
+            const sanitizedChordNameId = sanitizeId(fundamentalChordName_normalized);
+            const chordEntryId = `entry-${sanitizedChordNameId}`;
+            output += `    <div class="chord-entry" id="${chordEntryId}"><p style="text-align:center; padding-top: 20px;">Loading ${fundamentalChordName_normalized}...</p></div>`;
+        });
+    });
+    // Fallback: any chords not placed in any section group
     allGeneratedChordsSet.forEach(fundamentalChordName_normalized => {
         if (typeof fundamentalChordName_normalized !== 'string' || !fundamentalChordName_normalized.trim() || fundamentalChordName_normalized.includes("_ERR")) return;
+        if (globalRendered.has(fundamentalChordName_normalized)) return;
         const sanitizedChordNameId = sanitizeId(fundamentalChordName_normalized);
         const chordEntryId = `entry-${sanitizedChordNameId}`;
         output += `    <div class="chord-entry" id="${chordEntryId}"><p style="text-align:center; padding-top: 20px;">Loading ${fundamentalChordName_normalized}...</p></div>`;
@@ -328,8 +368,9 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
                 }
             }
 
+            const rngForShape = (typeof seededRandom === 'function') ? seededRandom : Math.random;
             const randomIndexForShape = chordEntryInLib.shapes.length > 0 ?
-                Math.floor(Math.random() * chordEntryInLib.shapes.length) : 0;
+                Math.floor(rngForShape() * chordEntryInLib.shapes.length) : 0;
 
             glossaryChordData[fundamentalChordName_normalized] = {
                 fundamentalDisplayName: fundamentalChordName_normalized,
@@ -348,7 +389,20 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
             const entryDiv = document.getElementById(chordEntryId);
 
             if (entryDiv) {
-                let entryHtmlContent = `<strong>${currentFundamentalData.fundamentalDisplayName}</strong>`;
+                // Build tooltip text: quality + intervals in semitones
+                const { type: chordSuffix } = getChordRootAndType(fundamentalChordName_normalized);
+                const qualityDefForTooltip = typeof QUALITY_DEFS !== 'undefined'
+                    ? Object.values(QUALITY_DEFS).find(q => q.suffix === chordSuffix)
+                    : null;
+                const qualityLabel = qualityDefForTooltip ? qualityDefForTooltip.quality : (chordSuffix || 'Maggiore');
+                const intervalStr = qualityDefForTooltip && qualityDefForTooltip.intervals
+                    ? qualityDefForTooltip.intervals.join(' – ')
+                    : '';
+                const tooltipText = intervalStr
+                    ? `${qualityLabel} · semitones: ${intervalStr}`
+                    : qualityLabel;
+
+                let entryHtmlContent = `<strong class="chord-name-tooltip" data-tooltip="${tooltipText}">${currentFundamentalData.fundamentalDisplayName}</strong>`;
                 entryHtmlContent += `<code>Notes: ${currentFundamentalData.fundamentalNotes.join(" ")}</code>`;
                 entryHtmlContent += `<div class="diagram-container" data-chord="${fundamentalChordName_normalized}">`;
 

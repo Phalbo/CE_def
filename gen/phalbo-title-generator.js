@@ -155,30 +155,57 @@ const suffixes = [
   'The Hermeneutics of Horror', 'The Heterotopia of Hindsight', 'The Hilarity of Horror', 'The Hologram of Happiness'
 ];
 
+// Multilingual word pools (Group 8 — v5.2)
+const WORDS_IT = ["notturno","furioso","dolce","eterno","fragile","abisso","cenere","silenzio","vuoto","ombra","fuoco","deriva","lento","amaro","strano"];
+const WORDS_FR = ["lumière","brume","éclat","fantôme","désir","nuit","vague","errance","ruine","sang","fièvre","oubli"];
+const WORDS_DE = ["Sehnsucht","Sturm","Nacht","Asche","Welt","Traum","Geist","Licht","Dunkel","Klang","Nebel","Zeit"];
+
+const SUBTITLE_FORMATS = [
+    w => `(${w})`,
+    w => `— ${w}`,
+    w => `/ ${w}`,
+];
+
 function generatePhalboTitle() {
     if (typeof chance === 'undefined') {
-        console.error("chance.js non è stato caricato. Impossibile generare un titolo.");
+        console.error("chance.js not loaded.");
         return "Phalbo Caprice (Error)";
     }
     const chanceInstance = new Chance();
-
     const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-    const structures = [
+    // 60% chance of mixing in a non-English word
+    const useMultilingual = Math.random() < 0.60;
+    const langPools = [WORDS_IT, WORDS_FR, WORDS_DE];
+    const multiWord = useMultilingual ? getRandom(getRandom(langPools)) : null;
+
+    // Build title using a structure (65% include Phalbo)
+    const usePhalbo = Math.random() < 0.65;
+
+    const structures = usePhalbo ? [
+        () => `${getRandom(phalboForms)}: ${getRandom(adjectives)} ${getRandom(nouns)}${multiWord ? ' ' + multiWord : ''}`,
         () => `${getRandom(articles)} ${getRandom(adjectives)} ${getRandom(nouns)} ${getRandom(connectors)} ${getRandom(phalboForms)} ${getRandom(suffixes)}`,
-        () => `${getRandom(phalboForms)} ${getRandom(connectors)} ${getRandom(adjectives)} ${getRandom(nouns)}`,
+        () => `${getRandom(phalboForms)} ${getRandom(connectors)} ${getRandom(adjectives)} ${getRandom(nouns)}${multiWord ? ' (' + multiWord + ')' : ''}`,
         () => `${getRandom(phalboForms)}: ${chanceInstance.word({ syllables: 3 })} ${getRandom(suffixes)}`,
-        () => `${getRandom(articles)} ${getRandom(nouns)} ${getRandom(connectors)} ${getRandom(phalboForms)}`,
-        () => `${getRandom(phalboForms)} ${getRandom(connectors)} ${chanceInstance.word()}`,
-        () => `${getRandom(phalboForms)}: The ${chanceInstance.animal()} Session`,
-        () => `A ${getRandom(nouns)} for ${getRandom(phalboForms)}`,
+        () => `A ${getRandom(nouns)} for ${getRandom(phalboForms)}${multiWord ? ' — ' + multiWord : ''}`,
+    ] : [
+        () => `${getRandom(adjectives)} ${getRandom(nouns)}${multiWord ? ' ' + multiWord : ''} ${getRandom(suffixes)}`,
+        () => `${getRandom(articles)} ${getRandom(nouns)} ${getRandom(connectors)} ${multiWord || getRandom(nouns)}`,
+        () => `${chanceInstance.word({ syllables: 2 })} ${getRandom(nouns)} ${getRandom(suffixes)}`,
     ];
 
-    const randomStructure = getRandom(structures);
-    let title = randomStructure();
+    let title = getRandom(structures)();
 
-    // Rimuove eventuali caratteri speciali non desiderati, tranne quelli in phalboForms
-    title = title.replace(/[^\w\s\.\-™:()]/g, '');
+    // 15% chance of subtitle in a different language
+    if (Math.random() < 0.15) {
+        const subtitleLangIdx = Math.floor(Math.random() * langPools.length);
+        const subtitleWord = getRandom(langPools[subtitleLangIdx]);
+        const fmt = getRandom(SUBTITLE_FORMATS);
+        title = `${title}\n${fmt(subtitleWord)}`;
+    }
 
-    return title;
+    // Clean up unwanted characters (preserve letters, digits, spaces, punctuation from arrays)
+    title = title.replace(/[^\w\s\.\-™:()\/\!\?\,\'\"\n\u00C0-\u024F\u00DF-\u00F6\u00F8-\u00FF]/g, '');
+
+    return title.trim();
 }

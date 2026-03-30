@@ -763,7 +763,8 @@ button#generateGlitchFxButton:hover { background: var(--btn-glitch-bg); color: #
   vertical-align: middle;
   flex-shrink: 0;
 }
-.preview-dot.active { background: #3EC9A0; }
+.preview-dot.active,
+.preview-dot.preview-dot--active { background: #3EC9A0; }
 
 /* === BUTTON GROUP SECTIONS === */
 .btn-group-section {

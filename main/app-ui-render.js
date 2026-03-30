@@ -180,7 +180,16 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
 
     output += `<section id="main-scale-display-section" class="main-content-section">`;
     output += `  <h3 class="section-header-title">Main Song Scale</h3>`;
-    output += `  <p><strong>${mainScaleText.replace(/<br\/?>/gi, ' ').replace(/<\/?em>/gi, '')}</strong></p>`;
+    const scaleDisplayText = mainScaleText.replace(/<br\/?>/gi, ' ').replace(/<\/?em>/gi, '');
+    output += `  <p><strong>${scaleDisplayText}</strong></p>`;
+    // Scale degree row (Group 9)
+    if (mainScaleParsedNotes && mainScaleParsedNotes.length > 0) {
+        const degreeNumerals = ['1','2','3','4','5','6','7'];
+        const noteCells = mainScaleParsedNotes.slice(0, 7).map((n, i) =>
+            `<span class="scale-degree-cell"><span class="scale-note">${n}</span><span class="scale-numeral">${degreeNumerals[i] || ''}</span></span>`
+        ).join('');
+        output += `  <div class="scale-degree-row">${noteCells}</div>`;
+    }
     if (mainScaleParsedNotes && mainScaleParsedNotes.length > 0 && typeof renderGuitarScaleDiagram === "function" && typeof renderPianoScaleDiagram === "function") {
         output += `  <div class="main-scale-diagram-container">`;
         output += `    <div class="diagram main-scale-guitar">${renderGuitarScaleDiagram(mainScaleParsedNotes, mainScaleParsedRoot, mainScaleParsedName)}</div>`;

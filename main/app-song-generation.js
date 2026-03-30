@@ -331,8 +331,21 @@ async function generateSongArchitecture() {
             timeSignatureChanges = [{ tick: 0, ts: [...activeTimeSignatureForSectionLogic] }];
         }
 
-        const songTitle = generatePhalboTitle();
+        // Group 3: support regenerate-from-title
+        const songTitle = (window._overrideTitle && window._overrideTitle.trim())
+            ? window._overrideTitle.trim()
+            : generatePhalboTitle();
+        window._overrideTitle = null; // consume once
         const displaySongTitle = songTitle;
+
+        // Group 3: initialise the seeded RNG from the title
+        let songSeed = 0;
+        let songId = '';
+        if (typeof initSeedFromTitle === 'function') {
+            songSeed = initSeedFromTitle(songTitle);
+            songId = typeof seedToSongId === 'function' ? seedToSongId(songSeed) : String(songSeed);
+        }
+
         const styleNote = moodProfile.styleNotes || "Experiment.";
 
         currentMidiData = {
@@ -492,6 +505,8 @@ async function generateSongArchitecture() {
         }
         currentMidiData.mainScaleNotes = mainScaleParsedNotes;
         currentMidiData.mainScaleRoot = mainScaleParsedRoot;
+        currentMidiData.songSeed = songSeed;
+        currentMidiData.songId = songId;
 
         rawMidiSectionsData.forEach(section => {
             if (section.key && section.scale) {

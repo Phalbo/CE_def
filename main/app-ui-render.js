@@ -130,14 +130,31 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
     const mood = document.getElementById('mood').value;
     const moodProfile = MOOD_PROFILES[mood] || MOOD_PROFILES["very_normal_person"];
     const finalStyleNote = styleNote || moodProfile.styleNotes || "Experiment.";
+    const songId = songData.songId || '';
 
-    let output = `<h3 class="song-title-main">${displayTitle}</h3><div class="song-main-info">`;
-    output += `<p><strong>Mood:</strong> ${mood.replace(/_/g, ' ')}</p>`;
-    output += `<p><strong>Key:</strong> ${fullKeyName || "N/A"}</p>`;
-    output += `<p><strong>BPM:</strong> ${bpm} BPM</p>`;
-    output += `<p id="initial-time-signature"><strong>Meter:</strong> ${timeSignatureChanges && timeSignatureChanges.length > 0 ? (timeSignatureChanges[0].ts[0] + '/' + timeSignatureChanges[0].ts[1]) : 'N/A'}</p>`;
-    output += `<p id="estimated-duration"></p>`;
-    output += `<p><strong>Style Notes:</strong> ${finalStyleNote}</p></div>`;
+    let output = `<h3 class="song-title-main">${displayTitle}</h3>`;
+
+    // Song ID row (Group 3)
+    if (songId) {
+        output += `<div class="song-id-row">`;
+        output += `<span class="song-id-label">Song ID</span>`;
+        output += `<span class="song-id-value" id="song-id-display">${songId}</span>`;
+        output += `<button class="song-id-copy-btn" id="songIdCopyBtn" title="Copy Song ID">Copy ID</button>`;
+        output += `</div>`;
+        output += `<div class="song-regen-row">`;
+        output += `<input class="song-regen-input" id="regenTitleInput" type="text" placeholder="Paste a title to regenerate…" autocomplete="off">`;
+        output += `<button class="song-regen-btn" id="regenFromTitleBtn">↩ Load</button>`;
+        output += `</div>`;
+    }
+
+    output += `<div class="song-main-info">`;
+    output += `<span class="info-pill"><span class="pill-label">Mood</span><span class="pill-value">${mood.replace(/_/g, ' ')}</span></span>`;
+    output += `<span class="info-pill"><span class="pill-label">Key</span><span class="pill-value">${fullKeyName || 'N/A'}</span></span>`;
+    output += `<span class="info-pill"><span class="pill-label">BPM</span><span class="pill-value">${bpm}</span></span>`;
+    output += `<span class="info-pill" id="initial-time-signature"><span class="pill-label">Meter</span><span class="pill-value">${timeSignatureChanges && timeSignatureChanges.length > 0 ? (timeSignatureChanges[0].ts[0] + '/' + timeSignatureChanges[0].ts[1]) : 'N/A'}</span></span>`;
+    output += `<span class="info-pill" id="estimated-duration"></span>`;
+    output += `<span class="info-pill pill-style-notes"><span class="pill-label">Style</span><span class="pill-value">${finalStyleNote}</span></span>`;
+    output += `</div>`;
 
     output += `<div class="song-sections-timeline" id="song-timeline-container">`;
     sections.forEach((sectionData, sectionIndex) => {
@@ -443,6 +460,6 @@ function updateEstimatedSongDuration() {
     const durationString = `${minutes} min ${seconds < 10 ? '0' : ''}${seconds} sec`;
     const durationElement = document.getElementById('estimated-duration');
     if (durationElement) {
-        durationElement.innerHTML = `<strong>Estimated Duration:</strong> ${durationString}`;
+        durationElement.innerHTML = `<span class="pill-label">Duration</span><span class="pill-value">${durationString}</span>`;
     }
 }

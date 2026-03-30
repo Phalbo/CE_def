@@ -1,11 +1,31 @@
-// File: app-setup.js - v1.34
-// Responsabile dell'impostazione iniziale, creazione UI dinamica, listeners principali.
+// File: app-setup.js - v5.2
+// Setup, UI listeners, toast notifications, seed UI, Ctrl+Enter.
 
 let currentSongDataForSave = null;
 let glossaryChordData = {};
 let CHORD_LIB = {};
 let currentMidiData = null; // Dati della canzone attualmente generata
-let midiSectionTitleElement = null; // Elemento H3 per il titolo della sezione download MIDI
+let midiSectionTitleElement = null;
+
+/** Show a transient toast notification. */
+function showToast(msg, type = 'success', duration = 3000) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    const dismiss = () => {
+        toast.classList.add('toast-hiding');
+        toast.addEventListener('animationend', () => toast.remove(), { once: true });
+    };
+    const timer = setTimeout(dismiss, duration);
+    toast.addEventListener('click', () => { clearTimeout(timer); dismiss(); });
+}
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -81,6 +101,35 @@ document.addEventListener('DOMContentLoaded', () => {
             generateButton.textContent = 'Error: Setup Incomplete';
         }
     }
+
+    // Ctrl+Enter shortcut
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            if (generateButton && !generateButton.disabled) generateButton.click();
+        }
+    });
+
+    // Event delegation: Song ID copy + regen from title (injected into #songOutput after render)
+    document.addEventListener('click', (e) => {
+        if (e.target.id === 'songIdCopyBtn') {
+            const idEl = document.getElementById('song-id-display');
+            const titleText = document.querySelector('.song-title-main')?.textContent || '';
+            const text = `${titleText}\nSong ID: ${idEl?.textContent || ''}`;
+            navigator.clipboard.writeText(text).then(() => showToast('Song ID copied!', 'info', 2000))
+                .catch(() => showToast('Copy failed — check permissions.', 'error'));
+        }
+        if (e.target.id === 'regenFromTitleBtn') {
+            const input = document.getElementById('regenTitleInput');
+            const title = input?.value?.trim();
+            if (!title) { showToast('Enter a title first.', 'error', 2000); return; }
+            if (typeof initSeedFromTitle === 'function' && typeof generateSongArchitecture === 'function') {
+                // Store the custom title so generateSongArchitecture can pick it up
+                window._overrideTitle = title;
+                generateSongArchitecture();
+            }
+        }
+    });
 
     // Definisci attachActionListenersGlobal per essere chiamata dopo la generazione della UI
     window.attachActionListenersGlobal = function() {

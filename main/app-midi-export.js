@@ -294,8 +294,11 @@ function handleGenerateBassLine() {
     const bassBtn = document.getElementById('generateBassLineButton');
     if (bassBtn) { bassBtn.disabled = true; bassBtn.textContent = "Creating Bass Line..."; }
     try {
+        const bassMode = document.getElementById('bassMode')?.value || 'pattern';
+        // Clear bass section cache so mode change takes effect immediately
+        if (sectionCache) sectionCache.bass = {};
         const helpers = { getChordRootAndType, getChordNotes, getScaleNotes, getRandomElement, getDiatonicChords, NOTE_NAMES };
-        const bassLine = generateBassLineForSong(currentMidiData, helpers, sectionCache);
+        const bassLine = generateBassLineForSong(currentMidiData, helpers, sectionCache, bassMode);
         if (bassLine && bassLine.length > 0) {
             const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_Bass.mid`;
             downloadSingleTrackMidi(`Bass`, bassLine, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);

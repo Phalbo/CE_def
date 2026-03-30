@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CapricEngine</title>
+  <title>CapricEngine v5.2</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display&family=Rajdhani:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style/core-layout.css">
   <link rel="stylesheet" href="style/components.css">
   <link rel="stylesheet" href="style/theme-visuals.css">
@@ -15,7 +15,7 @@
 <body>
   <header>
     <img src="CapricEngine_LogoW.svg" alt="CapricEngine Logo" id="appLogo">
-    <p>Create musical architectures - v2.29</p> </header>
+    <p>Create musical architectures - v5.2</p> </header>
 
   <main>
     <section id="input-controls-section" class="main-content-section"> <form id="songParamsForm">
@@ -27,7 +27,7 @@
             <option value="etereo_sognante">Ethereal / Dreamy</option>
             <option value="arrabbiato_critico">Angry / Critical</option>
             <option value="sperimentale_astratto">Experimental / Abstract</option>
-            <option value="very_normal_person" selected>Very Normal Person (Pop/Rock)</option>
+            <option value="very_normal_person" selected>Mega Pop Hit (Pop/Rock)</option>
           </select>
         </div>
 
@@ -72,6 +72,16 @@
         <div>
             <label for="enableModalInterchange">Enable Modal Interchange:</label>
             <input type="checkbox" id="enableModalInterchange" name="enableModalInterchange" checked>
+        </div>
+
+        <div>
+          <label for="bassMode">Bass Mode:</label>
+          <select id="bassMode" name="bassMode">
+            <option value="random" selected>Random</option>
+            <option value="pattern">Pattern (classic)</option>
+            <option value="walking">Walking</option>
+            <option value="generative">Generative</option>
+          </select>
         </div>
 
         <div class="button-container">
@@ -131,7 +141,13 @@
 <script src="main/app-ui-render.js"></script>
 <script src="main/app-midi-export.js"></script>
 <script src="main/app-setup.js"></script>
-
-
+<!-- CDN: Tone.js for audio preview -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js" crossorigin="anonymous"></script>
+<!-- CDN: html2canvas + jsPDF for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
+<!-- Audio preview -->
+<script src="main/app-audio-playback.js"></script>
+  <div id="toast-container"></div>
 </body>
 </html>

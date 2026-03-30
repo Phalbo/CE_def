@@ -92,11 +92,14 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
         </h3>
         <div id="generator-row-1" class="button-container">
           <button id="saveSongButton" class="action-button">Save Song Data</button>
+          <button id="savePdfButton" class="action-button">Save PDF</button>
+          <button id="previewButton" class="action-button">&#9654; Preview</button>
+          <button id="stopPreviewButton" class="action-button" disabled>&#9632; Stop</button>
           <button id="downloadSingleTrackChordMidiButton" class="action-button">Pad</button>
           <button id="generateChordRhythmButton" class="action-button">Arpeggiator</button>
           <button id="generateMelodyButton" class="action-button">Inspiration (Melody)</button>
-          <button id="generateVocalLineButton" class="action-button">Vocal Shame Machine</button>
-          <button id="generateBassLineButton" class="action-button">Deekonizer (bass)</button>
+          <button id="generateVocalLineButton" class="action-button">Vocals</button>
+          <button id="generateBassLineButton" class="action-button">Bass</button>
           <button id="generateDrumTrackButton" class="action-button">LingoStarr (drum)</button>
         </div>
         <div id="generator-row-2" class="button-container">

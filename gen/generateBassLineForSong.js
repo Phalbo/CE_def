@@ -248,7 +248,12 @@ function normalizeSectionName(name) {
   return name.replace(/\s*\d+$/, '').trim();
 }
 
-function generateBassLineForSong(songData, helpers, sectionCache) {
+function generateBassLineForSong(songData, helpers, sectionCache, bassMode = 'pattern') {
+    // Resolve 'random' to a concrete mode
+    if (bassMode === 'random') {
+        bassMode = (['pattern', 'walking', 'generative'])[Math.floor(Math.random() * 3)];
+    }
+
     const bassLine = [];
     let lastEvent = null;
 
@@ -278,7 +283,56 @@ function generateBassLineForSong(songData, helpers, sectionCache) {
                 sectionIndex,
                 slotIndex
             };
-            const phrase = generateBassPhraseForSlot(context, lastEvent, helpers);
+
+            let phrase;
+
+            if (bassMode === 'generative') {
+                // Generative mode: chord-tone selection with weights [root 50%, fifth 25%, third 25%]
+                phrase = [];
+                const { getChordRootAndType, getChordNotes, NOTE_NAMES } = helpers;
+                const { root, type } = getChordRootAndType(slot.chordName);
+                const chordNotes = getChordNotes(root, type).notes;
+                const rootPitch = NOTE_NAMES.indexOf(root) + 36;
+                const thirdPitch = chordNotes[1] ? NOTE_NAMES.indexOf(chordNotes[1]) + 36 : rootPitch;
+                const fifthPitch = chordNotes[2] ? NOTE_NAMES.indexOf(chordNotes[2]) + 36 : rootPitch;
+                const ticksPerBeat = (4 / slot.timeSignature[1]) * (typeof TICKS_PER_QUARTER_NOTE_REFERENCE !== 'undefined' ? TICKS_PER_QUARTER_NOTE_REFERENCE : 128);
+                const noteDuration = ticksPerBeat * 0.5;
+                let currentTick = 0;
+                while (currentTick < slot.effectiveDurationTicks) {
+                    const r = Math.random();
+                    let pitch = r < 0.50 ? rootPitch : (r < 0.75 ? fifthPitch : thirdPitch);
+                    pitch = Math.max(BASS_PARAMS.PITCH_RANGE.min, Math.min(BASS_PARAMS.PITCH_RANGE.max, pitch));
+                    const actualDuration = Math.min(noteDuration, slot.effectiveDurationTicks - currentTick);
+                    if (actualDuration <= 0) break;
+                    phrase.push({
+                        pitch: [pitch],
+                        duration: `T${Math.round(actualDuration)}`,
+                        startTick: context.startTick + currentTick,
+                        velocity: 70 + Math.floor(Math.random() * 15)
+                    });
+                    currentTick += actualDuration;
+                }
+            } else {
+                // 'pattern' or 'walking' — use standard phrase generator
+                phrase = generateBassPhraseForSlot(context, lastEvent, helpers);
+
+                if (bassMode === 'walking' && phrase.length > 0) {
+                    // Replace the last note with an approach note (1 semitone below next chord root)
+                    const nextSlot = section.mainChordSlots[slotIndex + 1];
+                    if (nextSlot) {
+                        const { getChordRootAndType, NOTE_NAMES } = helpers;
+                        const { root: nextRoot } = getChordRootAndType(nextSlot.chordName);
+                        const nextRootPitch = NOTE_NAMES.indexOf(nextRoot) + 36;
+                        const approachPitch = Math.max(
+                            BASS_PARAMS.PITCH_RANGE.min,
+                            Math.min(BASS_PARAMS.PITCH_RANGE.max, nextRootPitch - 1)
+                        );
+                        const lastNote = phrase[phrase.length - 1];
+                        phrase[phrase.length - 1] = { ...lastNote, pitch: [approachPitch] };
+                    }
+                }
+            }
+
             if (phrase.length > 0) {
                 lastEvent = phrase[phrase.length - 1];
             }

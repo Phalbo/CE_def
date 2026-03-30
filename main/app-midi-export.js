@@ -274,7 +274,7 @@ function handleGenerateVocalLine() {
         console.error("Error during vocal line generation:", e, e.stack);
         alert("Critical error during vocal line generation. Check the console.");
     }
-    finally { if (vocalBtn) { vocalBtn.disabled = false; vocalBtn.textContent = "Vocal Shame Machine"; } }
+    finally { if (vocalBtn) { vocalBtn.disabled = false; vocalBtn.textContent = "Vocals"; } }
 }
 
 function getScaleNotes(root, scale) {
@@ -295,7 +295,9 @@ function handleGenerateBassLine() {
     if (bassBtn) { bassBtn.disabled = true; bassBtn.textContent = "Creating Bass Line..."; }
     try {
         const helpers = { getChordRootAndType, getChordNotes, getScaleNotes, getRandomElement, getDiatonicChords, NOTE_NAMES };
-        const bassLine = generateBassLineForSong(currentMidiData, helpers, sectionCache);
+        const bassModeRaw = document.getElementById('bassMode')?.value || 'pattern';
+        const bassMode = bassModeRaw === 'random' ? (['pattern','walking','generative'])[Math.floor(Math.random()*3)] : bassModeRaw;
+        const bassLine = generateBassLineForSong(currentMidiData, helpers, sectionCache, bassMode);
         if (bassLine && bassLine.length > 0) {
             const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_Bass.mid`;
             downloadSingleTrackMidi(`Bass`, bassLine, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);
@@ -304,7 +306,7 @@ function handleGenerateBassLine() {
         console.error("Error during bass line generation:", e, e.stack);
         alert("Critical error during bass line generation. Check the console.");
     }
-    finally { if (bassBtn) { bassBtn.disabled = false; bassBtn.textContent = "Deekonizer (bass)"; } }
+    finally { if (bassBtn) { bassBtn.disabled = false; bassBtn.textContent = "Bass"; } }
 }
 
 function handleGenerateDrumTrack() {

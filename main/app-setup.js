@@ -141,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         addListener('saveSongButton', handleSaveSong);
+        addListener('savePdfButton', handleSavePDF);
         addListener('downloadSingleTrackChordMidiButton', handleGeneratePad);
         addListener('generateChordRhythmButton', handleGenerateChordRhythm);
         addListener('generateMelodyButton', handleGenerateMelody);

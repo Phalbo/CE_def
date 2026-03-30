@@ -251,7 +251,7 @@ async function generateSongArchitecture() {
     const generateButton = document.getElementById('generateButton');
     const songOutputDiv = document.getElementById('songOutput');
 
-    if (generateButton) { generateButton.disabled = true; generateButton.textContent = 'Generating...'; }
+    if (generateButton) { generateButton.disabled = true; generateButton.classList.add('loading'); generateButton.textContent = 'Generating...'; }
     songOutputDiv.innerHTML = '<p><em>Generating your sonic architecture...</em></p>';
     currentSongDataForSave = null; currentMidiData = {};
     glossaryChordData = {};
@@ -293,7 +293,7 @@ async function generateSongArchitecture() {
         if (!selectedKey || typeof selectedKey.root === 'undefined' || typeof selectedKey.mode === 'undefined') {
             console.error("ERRORE: Tonalità selezionata non valida.", selectedKey);
             songOutputDiv.innerHTML = "<p>Errore: Tonalità non valida. Prova con 'Random'.</p>";
-            if (generateButton) { generateButton.disabled = false; generateButton.textContent = 'Generate';} return;
+            if (generateButton) { generateButton.disabled = false; generateButton.classList.remove('loading'); generateButton.textContent = 'Generate';} return;
         }
 
                const bpm = generateBPM(tempoFeeling);
@@ -534,7 +534,7 @@ async function generateSongArchitecture() {
         console.error("ERRORE CRITICO durante la generazione dell'architettura:", error, error.stack);
         songOutputDiv.innerHTML = `<p>Errore critico: ${error.message}. Controlla la console.</p>`;
     } finally {
-        if (generateButton) { generateButton.disabled = false; generateButton.textContent = 'Generate'; }
+        if (generateButton) { generateButton.disabled = false; generateButton.classList.remove('loading'); generateButton.textContent = 'Generate'; }
     }
 }
 

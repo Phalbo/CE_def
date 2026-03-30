@@ -100,6 +100,47 @@
     *   Replaced the old `MOOD_SONG_STRUCTURES` with the more comprehensive `MOOD_PROFILES`.
     *   Refactored the song generation and UI rendering logic to use the new mood-based system.
 
+## Deployment
+
+### Requirements
+- **PHP 7.4+** (for `get_chord_data.php` chord voicing lookups)
+- **Apache** with `mod_rewrite`, `mod_headers`, `mod_deflate` enabled
+- **No npm / composer / build step** — all JS loaded via `<script>` tags
+
+### Quick Start (SiteGround / Plesk)
+1. Upload all files to your document root (or a subdirectory).
+2. The included `.htaccess` handles URL rewriting, caching, and gzip automatically.
+3. Verify `mod_rewrite` is enabled in your hosting panel; on SiteGround this is on by default.
+
+### Subdirectory path fix for `get_chord_data.php`
+If the app is served from a subdirectory (e.g. `https://example.com/capric/`), update the fetch URL in `main/app-ui-render.js`:
+
+```js
+// Change this line (~line 261):
+const positionsFromPHP = await fetchChordVoicings(chordRoot, chordSuffix);
+
+// Inside fetchChordVoicings (lib/chord-renderer.js or similar), set:
+const BASE_PATH = '/capric'; // adjust to your actual subdirectory
+const url = `${BASE_PATH}/get_chord_data.php?root=${root}&suffix=${suffix}`;
+```
+
+### Offline mode (no PHP)
+Replace the live `get_chord_data.php` calls with a static JSON fallback:
+1. Export the chord database to `lib/chord-db/chords-static.json` (key: `"Root_suffix"`, value: array of voicings).
+2. In `lib/chord-renderer.js`, replace the `fetch(…get_chord_data.php…)` call with:
+```js
+async function fetchChordVoicings(root, suffix) {
+    if (!_chordStaticDb) {
+        const res = await fetch('lib/chord-db/chords-static.json');
+        _chordStaticDb = await res.json();
+    }
+    return _chordStaticDb[`${root}_${suffix}`] || [];
+}
+```
+3. The rest of the app (MIDI export, audio preview, PDF) works identically with no PHP dependency.
+
+---
+
 ## Overview
 
 CapricEngine is a web-based application that procedurally generates musical compositions. It allows users to select a mood, tempo, and key, and then generates a complete song structure with chords, a bassline, a melody, and a drum track. The application is built with HTML, CSS, and JavaScript, and uses the `midiwriter.js` library to export the generated music as MIDI files.

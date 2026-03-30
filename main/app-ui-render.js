@@ -88,28 +88,39 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
     }
     actionButtonsContainer.innerHTML = `
         <h3 class="chord-glossary-title section-header-title">
-            download your global hit in MIDI format<br>
+            download your global hit in MIDI format
         </h3>
-        <div id="generator-row-1" class="button-container">
-          <button id="saveSongButton" class="action-button">Save Song Data</button>
-          <button id="savePdfButton" class="action-button">Save PDF</button>
-          <button id="previewButton" class="action-button">▶ Preview</button>
-          <button id="stopPreviewButton" class="action-button" disabled>■ Stop</button>
-          <button id="downloadSingleTrackChordMidiButton" class="action-button">Pad</button>
-          <button id="generateChordRhythmButton" class="action-button">Arpeggiator</button>
-          <button id="generateMelodyButton" class="action-button">Inspiration (Melody)</button>
-          <button id="generateVocalLineButton" class="action-button">Vocal Shame Machine</button>
-          <button id="generateBassLineButton" class="action-button">Deekonizer (bass)</button>
-          <button id="generateDrumTrackButton" class="action-button">LingoStarr (drum)</button>
+        <div class="btn-group-section">
+          <span class="btn-group-label">Actions</span>
+          <div class="button-container">
+            <button id="saveSongButton" class="action-button">Save Song Data</button>
+            <button id="savePdfButton" class="action-button">Save PDF</button>
+            <button id="previewButton" class="action-button">&#9654; Preview</button>
+            <button id="stopPreviewButton" class="action-button" disabled>&#9632; Stop</button>
+          </div>
         </div>
-        <div id="generator-row-2" class="button-container">
-          <button id="generateCountermelodyButton" class="action-button">Countermelody</button>
-          <button id="generateTextureButton" class="action-button">Texture</button>
-          <button id="generateOrnamentButton" class="action-button">Ornament</button>
-          <button id="generateMiasmaticButton" class="action-button">Miasmatic</button>
-          <button id="generateDronesButton" class="action-button">Drones</button>
-          <button id="generatePercussionButton" class="action-button">Percussion</button>
-          <button id="generateGlitchFxButton" class="action-button">Glitch fx</button>
+        <div class="btn-group-section">
+          <span class="btn-group-label">Main Generators</span>
+          <div class="button-container">
+            <button id="downloadSingleTrackChordMidiButton" class="action-button">Pad</button>
+            <button id="generateChordRhythmButton" class="action-button">Arpeggiator</button>
+            <button id="generateMelodyButton" class="action-button">Inspiration (Melody)</button>
+            <button id="generateVocalLineButton" class="action-button">Vocal Shame Machine</button>
+            <button id="generateBassLineButton" class="action-button">Deekonizer (bass)</button>
+            <button id="generateDrumTrackButton" class="action-button">LingoStarr (drum)</button>
+          </div>
+        </div>
+        <div class="btn-group-section">
+          <span class="btn-group-label">Extra Generators</span>
+          <div class="button-container">
+            <button id="generateCountermelodyButton" class="action-button">Countermelody</button>
+            <button id="generateTextureButton" class="action-button">Texture</button>
+            <button id="generateOrnamentButton" class="action-button">Ornament</button>
+            <button id="generateMiasmaticButton" class="action-button">Miasmatic</button>
+            <button id="generateDronesButton" class="action-button">Drones</button>
+            <button id="generatePercussionButton" class="action-button">Percussion</button>
+            <button id="generateGlitchFxButton" class="action-button">Glitch fx</button>
+          </div>
         </div>
     `;
 
@@ -132,14 +143,15 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
     const finalStyleNote = styleNote || moodProfile.styleNotes || "Experiment.";
 
     let output = `<h3 class="song-title-main">${displayTitle}</h3><div class="song-main-info">`;
-    output += `<p><strong>Mood:</strong> ${mood.replace(/_/g, ' ')}</p>`;
-    output += `<p><strong>Key:</strong> ${fullKeyName || "N/A"}</p>`;
-    output += `<p><strong>BPM:</strong> ${bpm} BPM</p>`;
-    output += `<p id="initial-time-signature"><strong>Meter:</strong> ${timeSignatureChanges && timeSignatureChanges.length > 0 ? (timeSignatureChanges[0].ts[0] + '/' + timeSignatureChanges[0].ts[1]) : 'N/A'}</p>`;
-    output += `<p id="estimated-duration"></p>`;
-    output += `<p><strong>Style Notes:</strong> ${finalStyleNote}</p></div>`;
+    output += `<span class="info-pill"><span class="pill-label">Mood</span><span class="pill-value">${mood.replace(/_/g, ' ')}</span></span>`;
+    output += `<span class="info-pill"><span class="pill-label">Key</span><span class="pill-value">${fullKeyName || "N/A"}</span></span>`;
+    output += `<span class="info-pill"><span class="pill-label">BPM</span><span class="pill-value">${bpm}</span></span>`;
+    output += `<span class="info-pill" id="initial-time-signature"><span class="pill-label">Meter</span><span class="pill-value">${timeSignatureChanges && timeSignatureChanges.length > 0 ? (timeSignatureChanges[0].ts[0] + '/' + timeSignatureChanges[0].ts[1]) : 'N/A'}</span></span>`;
+    output += `<span class="info-pill" id="estimated-duration"></span>`;
+    output += `<span class="info-pill pill-style-notes"><span class="pill-label">Style</span><span class="pill-value">${finalStyleNote}</span></span>`;
+    output += `</div>`;
 
-    output += `<div class="song-sections-timeline" id="song-timeline-container">`;
+    output += `<div class="timeline-scroll-wrapper"><div class="song-sections-timeline" id="song-timeline-container">`;
     sections.forEach((sectionData, sectionIndex) => {
         if (sectionData.measures === 0) return; // Non renderizzare sezioni a zero misure
 
@@ -161,22 +173,25 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
         const sectionWidthPx = barUnitWidth * displayBarUnits;
         const sectionColorVarName = `--section-color-${cleanSectionNameForCssVar}`;
 
+        const chordsString = sectionData.mainChordSlots && sectionData.mainChordSlots.length > 0
+            ? sectionData.mainChordSlots.map(slot => slot.chordName).join(' | ')
+            : '(Instrumental/Silence)';
+        const chordsForCopy = chordsString.replace(/"/g, '&quot;');
+
         output += `<div class="timeline-section-card" id="timeline-section-${sectionIndex}"
                         style="--section-color-var: var(${sectionColorVarName}, var(--section-color-default)); width: ${sectionWidthPx}px;">`;
         output += `  <div class="section-card-header">${sectionTitleForDisplay}</div>`;
         output += `  <div class="section-card-body">`;
         output += `    <div class="section-card-chords-container">`;
-        const chordsString = sectionData.mainChordSlots && sectionData.mainChordSlots.length > 0
-            ? sectionData.mainChordSlots.map(slot => slot.chordName).join(' | ')
-            : '(Instrumental/Silence)';
-        output += `      <div class="section-card-chords" data-chords="${chordsString}" data-has-chords="${!!(sectionData.mainChordSlots && sectionData.mainChordSlots.length > 0)}">${chordsString}</div>`;
+        output += `      <div class="section-card-chords" data-chords="${chordsForCopy}" data-has-chords="${!!(sectionData.mainChordSlots && sectionData.mainChordSlots.length > 0)}">${chordsString}</div>`;
         output += `    </div>`;
         output += `    <div class="section-bars-label">${barCountActual} bars</div>`;
         output += `  </div>`;
         output += `  <div class="section-bar-grid" data-bar-count="${barCountActual}"></div>`;
+        output += `  <button class="section-copy-btn" data-copy-chords="${chordsForCopy}" title="Copy chord progression">Copy</button>`;
         output += `</div>`;
     });
-    output += `</div>`;
+    output += `</div><p class="timeline-scroll-hint">&#8592; scroll to see all sections &#8594;</p></div>`;
 
     output += `<section id="main-scale-display-section" class="main-content-section">`;
     output += `  <h3 class="section-header-title">Main Song Scale</h3>`;
@@ -204,6 +219,12 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
     output += `  </div></section>`;
 
     songOutputDiv.innerHTML = output;
+
+    // Auto-scroll to results
+    const songOutputContainer = document.getElementById('song-output-container');
+    if (songOutputContainer) {
+        setTimeout(() => songOutputContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    }
 
     // Nuova logica per popolare dinamicamente i segmenti degli accordi
     sections.forEach((sectionData, sectionIndex) => {
@@ -434,6 +455,6 @@ function updateEstimatedSongDuration() {
     const durationString = `${minutes} min ${seconds < 10 ? '0' : ''}${seconds} sec`;
     const durationElement = document.getElementById('estimated-duration');
     if (durationElement) {
-        durationElement.innerHTML = `<strong>Estimated Duration:</strong> ${durationString}`;
+        durationElement.innerHTML = `<span class="pill-label">Duration</span><span class="pill-value">${durationString}</span>`;
     }
 }

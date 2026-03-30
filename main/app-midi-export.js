@@ -1,5 +1,10 @@
-// File: main/app-midi-export.js - v2.24
+// File: main/app-midi-export.js - v2.25
 // Gestisce l'esportazione MIDI e il salvataggio dei dati testuali.
+
+function _notify(msg, type = 'error') {
+    if (typeof showToast === 'function') showToast(msg, type);
+    else _notify(msg);
+}
 
 function buildSongDataForTextFile() {
     if (!currentMidiData) {
@@ -59,7 +64,8 @@ function buildSongDataForTextFile() {
 function handleSaveSong() {
     buildSongDataForTextFile();
     if(!currentSongDataForSave || !currentSongDataForSave.content) {
-        alert("No song data to save. Please generate a song first.");
+        if (typeof showToast === 'function') showToast('No song data to save. Generate a song first.', 'error');
+        else _notify("No song data to save. Please generate a song first.");
         return;
     }
     const blob = new Blob([currentSongDataForSave.content],{type:'text/plain;charset=utf-8'});
@@ -73,11 +79,12 @@ function handleSaveSong() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    if (typeof showToast === 'function') showToast('Song data saved!', 'success');
 }
 
 function downloadSingleTrackMidi(trackName, midiEvents, fileName, bpm, timeSignatureChanges) {
     if (!midiEvents || midiEvents.length === 0) {
-        alert(`No MIDI events generated for ${trackName}.`);
+        _notify(`No MIDI events generated for ${trackName}.`);
         return;
     }
 
@@ -150,7 +157,7 @@ function downloadSingleTrackMidi(trackName, midiEvents, fileName, bpm, timeSigna
 }
 
 function handleGenerateSingleTrackChordMidi(returnOnly = false) {
-    if (!currentMidiData || !currentMidiData.sections) { if(!returnOnly) alert("Please generate a song first."); return; }
+    if (!currentMidiData || !currentMidiData.sections) { if(!returnOnly) _notify("Please generate a song first."); return; }
     const { title, bpm, sections, timeSignatureChanges } = currentMidiData;
     const chordMIDIEvents = [];
 
@@ -192,8 +199,8 @@ function handleGenerateSingleTrackChordMidi(returnOnly = false) {
 }
 
 function handleGenerateChordRhythm(returnOnly = false) {
-    if (!currentMidiData || !currentMidiData.sections) { if(!returnOnly) alert("Please generate a song first."); return; }
-    if (typeof generateChordRhythmEvents !== "function") { if(!returnOnly) alert("Internal Error: Arpeggiator function not found."); return; }
+    if (!currentMidiData || !currentMidiData.sections) { if(!returnOnly) _notify("Please generate a song first."); return; }
+    if (typeof generateChordRhythmEvents !== "function") { if(!returnOnly) _notify("Internal Error: Arpeggiator function not found."); return; }
 
     const arpeggiatorBtn = document.getElementById('generateChordRhythmButton');
     if (arpeggiatorBtn && !returnOnly) { arpeggiatorBtn.disabled = true; arpeggiatorBtn.textContent = "Creating Arpeggio..."; }
@@ -223,12 +230,13 @@ function handleGenerateChordRhythm(returnOnly = false) {
         if (allRhythmicChordEvents.length > 0) {
             const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_Arpeggio.mid`;
             downloadSingleTrackMidi(`Arpeggio`, allRhythmicChordEvents, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);
+            if (typeof showToast === 'function') showToast('Arpeggio MIDI downloaded!', 'success');
         } else {
-            alert("Could not generate arpeggio with the current data.");
+            _notify("Could not generate arpeggio with the current data.");
         }
     } catch (e) {
         console.error("Error during arpeggio generation:", e, e.stack);
-        alert("Critical error during arpeggio generation. Check the console.");
+        _notify("Critical error during arpeggio generation. Check the console.");
     } finally {
         if (arpeggiatorBtn) { arpeggiatorBtn.disabled = false; arpeggiatorBtn.textContent = "Arpeggiator"; }
     }
@@ -236,9 +244,9 @@ function handleGenerateChordRhythm(returnOnly = false) {
 
 function handleGenerateMelody() {
     if (!currentMidiData || !currentMidiData.sections || !currentMidiData.mainScaleNotes || currentMidiData.mainScaleNotes.length === 0) {
-        alert("Song data is missing. Please generate a full structure first."); return;
+        _notify("Song data is missing. Please generate a full structure first."); return;
     }
-    if (typeof generateMelodyForSong !== "function") { alert("Internal Error: Melody generator not found."); return; }
+    if (typeof generateMelodyForSong !== "function") { _notify("Internal Error: Melody generator not found."); return; }
 
     const melodyBtn = document.getElementById('generateMelodyButton');
     if(melodyBtn) { melodyBtn.disabled = true; melodyBtn.textContent = "Creating Melody...";}
@@ -247,19 +255,20 @@ function handleGenerateMelody() {
         if (generatedMelody && generatedMelody.length > 0) {
             const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_Melody.mid`;
             downloadSingleTrackMidi(`Melody`, generatedMelody, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);
-        } else { alert("Could not generate a melody with the current data."); }
+            if (typeof showToast === 'function') showToast('Melody MIDI downloaded!', 'success');
+        } else { _notify("Could not generate a melody with the current data."); }
     } catch (e) {
         console.error("Critical error during melody generation:", e, e.stack);
-        alert("Critical error during melody generation. Check the console.");
+        _notify("Critical error during melody generation. Check the console.");
     }
     finally { if(melodyBtn){ melodyBtn.disabled = false; melodyBtn.textContent = "Inspiration (Melody)"; } }
 }
 
 function handleGenerateVocalLine() {
     if (!currentMidiData || !currentMidiData.sections || !currentMidiData.mainScaleNotes || currentMidiData.mainScaleNotes.length === 0) {
-        alert("Song data is missing. Please generate a full structure first."); return;
+        _notify("Song data is missing. Please generate a full structure first."); return;
     }
-    if (typeof generateVocalLineForSong !== "function") { alert("Internal Error: Vocal generator not found."); return; }
+    if (typeof generateVocalLineForSong !== "function") { _notify("Internal Error: Vocal generator not found."); return; }
 
     const vocalBtn = document.getElementById('generateVocalLineButton');
     if (vocalBtn) { vocalBtn.disabled = true; vocalBtn.textContent = "Creating Vocal Line..."; }
@@ -269,10 +278,11 @@ function handleGenerateVocalLine() {
         if (vocalLine && vocalLine.length > 0) {
             const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_Vocal.mid`;
             downloadSingleTrackMidi(`Vocal`, vocalLine, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);
-        } else { alert("Could not generate a vocal line with the current data."); }
+            if (typeof showToast === 'function') showToast('Vocal MIDI downloaded!', 'success');
+        } else { _notify("Could not generate a vocal line with the current data."); }
     } catch (e) {
         console.error("Error during vocal line generation:", e, e.stack);
-        alert("Critical error during vocal line generation. Check the console.");
+        _notify("Critical error during vocal line generation. Check the console.");
     }
     finally { if (vocalBtn) { vocalBtn.disabled = false; vocalBtn.textContent = "Vocal Shame Machine"; } }
 }
@@ -287,9 +297,9 @@ function getScaleNotes(root, scale) {
 
 function handleGenerateBassLine() {
     if (!currentMidiData || !currentMidiData.sections || !currentMidiData.mainScaleNotes || currentMidiData.mainScaleNotes.length === 0) {
-        alert("Song data is missing. Please generate a full structure first."); return;
+        _notify("Song data is missing. Please generate a full structure first."); return;
     }
-    if (typeof generateBassLineForSong !== "function") { alert("Internal Error: Bass generator not found."); return; }
+    if (typeof generateBassLineForSong !== "function") { _notify("Internal Error: Bass generator not found."); return; }
 
     const bassBtn = document.getElementById('generateBassLineButton');
     if (bassBtn) { bassBtn.disabled = true; bassBtn.textContent = "Creating Bass Line..."; }
@@ -302,19 +312,20 @@ function handleGenerateBassLine() {
         if (bassLine && bassLine.length > 0) {
             const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_Bass.mid`;
             downloadSingleTrackMidi(`Bass`, bassLine, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);
-        } else { alert("Could not generate a bass line with the current data."); }
+            if (typeof showToast === 'function') showToast('Bass MIDI downloaded!', 'success');
+        } else { _notify("Could not generate a bass line with the current data."); }
     } catch (e) {
         console.error("Error during bass line generation:", e, e.stack);
-        alert("Critical error during bass line generation. Check the console.");
+        _notify("Critical error during bass line generation. Check the console.");
     }
     finally { if (bassBtn) { bassBtn.disabled = false; bassBtn.textContent = "Deekonizer (bass)"; } }
 }
 
 function handleGenerateDrumTrack() {
     if (!currentMidiData || !currentMidiData.sections || currentMidiData.sections.length === 0 || !currentMidiData.bpm || !currentMidiData.timeSignatureChanges) {
-        alert("Song data is missing. Please generate a full structure first."); return;
+        _notify("Song data is missing. Please generate a full structure first."); return;
     }
-    if (typeof generateDrumTrackForSong !== "function") { alert("Internal Error: Drum generator not found."); return; }
+    if (typeof generateDrumTrackForSong !== "function") { _notify("Internal Error: Drum generator not found."); return; }
 
     const drumBtn = document.getElementById('generateDrumTrackButton');
     if (drumBtn) { drumBtn.disabled = true; drumBtn.textContent = "Creating Drum Track..."; }
@@ -325,10 +336,11 @@ function handleGenerateDrumTrack() {
         if (drumEvents && drumEvents.length > 0) {
             const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_Drums.mid`;
             downloadSingleTrackMidi(`Drums`, drumEvents, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);
-        } else { alert("Could not generate a drum track with the current data."); }
+            if (typeof showToast === 'function') showToast('Drums MIDI downloaded!', 'success');
+        } else { _notify("Could not generate a drum track with the current data."); }
     } catch (e) {
         console.error("Error during drum track generation:", e, e.stack);
-        alert("Critical error during drum track generation: " + e.message);
+        _notify("Critical error during drum track generation: " + e.message);
     }
     finally { if (drumBtn) { drumBtn.disabled = false; drumBtn.textContent = "LingoStarr (drum)"; } }
 }

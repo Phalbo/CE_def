@@ -137,6 +137,16 @@
   --section-color-partb: #5c8577;
   --section-color-partc: #6a9b88;
   --section-color-default: #444444; /* Colore di fallback */
+
+  /* Info pills */
+  --pill-bg: rgba(32, 201, 151, 0.1);
+  --pill-border: rgba(32, 201, 151, 0.3);
+  --pill-text: var(--text-primary);
+  --pill-label-color: var(--text-secondary);
+
+  /* Button group labels */
+  --btn-group-label-color: var(--text-muted);
+  --btn-group-border: var(--border-primary);
 }
 
 html {

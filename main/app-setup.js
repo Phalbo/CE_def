@@ -1,4 +1,4 @@
-// File: app-setup.js - v1.34
+// File: app-setup.js - v1.35
 // Responsabile dell'impostazione iniziale, creazione UI dinamica, listeners principali.
 
 let currentSongDataForSave = null;
@@ -6,6 +6,32 @@ let glossaryChordData = {};
 let CHORD_LIB = {};
 let currentMidiData = null; // Dati della canzone attualmente generata
 let midiSectionTitleElement = null; // Elemento H3 per il titolo della sezione download MIDI
+
+/**
+ * Show a transient toast notification.
+ * @param {string} msg   - Message text
+ * @param {'success'|'error'|'info'} [type='success']
+ * @param {number} [duration=3000] - ms before auto-dismiss
+ */
+function showToast(msg, type = 'success', duration = 3000) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = msg;
+    container.appendChild(toast);
+
+    const dismiss = () => {
+        toast.classList.add('toast-hiding');
+        toast.addEventListener('animationend', () => toast.remove(), { once: true });
+    };
+    const timer = setTimeout(dismiss, duration);
+    toast.addEventListener('click', () => { clearTimeout(timer); dismiss(); });
+}
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -82,6 +108,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Ctrl+Enter shortcut to generate
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            if (generateButton && !generateButton.disabled) generateButton.click();
+        }
+    });
+
+    // Event delegation for "Copy Chords" buttons inside timeline section cards
+    document.addEventListener('click', (e) => {
+        const copyBtn = e.target.closest('.section-copy-btn');
+        if (!copyBtn) return;
+        const chords = copyBtn.dataset.copyChords || '';
+        if (!chords) return;
+        navigator.clipboard.writeText(chords).then(() => {
+            showToast('Chord progression copied!', 'info', 2000);
+        }).catch(() => {
+            showToast('Copy failed — check browser permissions.', 'error');
+        });
+    });
+
     // Definisci attachActionListenersGlobal per essere chiamata dopo la generazione della UI
     window.attachActionListenersGlobal = function() {
         const addListener = (id, handler) => {
@@ -119,10 +166,10 @@ document.addEventListener('DOMContentLoaded', () => {
  * Degrades gracefully if either CDN library failed to load.
  */
 async function handleSavePDF() {
-    if (!currentMidiData) { alert('Generate a song first.'); return; }
+    if (!currentMidiData) { showToast('Generate a song first.', 'error'); return; }
 
     if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-        alert('PDF libraries are not available. Check your internet connection and reload the page.');
+        showToast('PDF libraries unavailable. Check your internet connection.', 'error');
         return;
     }
 
@@ -157,9 +204,10 @@ async function handleSavePDF() {
 
         const fileName = (currentMidiData.title || 'capricengine').replace(/[^a-zA-Z0-9_]/g, '_') + '.pdf';
         pdf.save(fileName);
+        showToast('PDF saved!', 'success');
     } catch (e) {
         console.error('PDF generation error:', e);
-        alert('Could not generate PDF. See console for details.');
+        showToast('Could not generate PDF. See console for details.', 'error');
     } finally {
         if (pdfBtn) { pdfBtn.disabled = false; pdfBtn.textContent = 'Save PDF'; }
     }
@@ -167,13 +215,14 @@ async function handleSavePDF() {
 
 function addTrackToMidiData(trackName, trackEvents) {
     if (!currentMidiData) {
-        alert("Please generate a song first.");
+        showToast('Please generate a song first.', 'error');
         return;
     }
     if (trackEvents && trackEvents.length > 0) {
         const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_${trackName}.mid`;
         downloadSingleTrackMidi(trackName, trackEvents, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);
+        showToast(`${trackName} MIDI downloaded!`, 'success');
     } else {
-        alert(`Could not generate ${trackName} track with the current data.`);
+        showToast(`Could not generate ${trackName} track.`, 'error');
     }
 }

@@ -248,7 +248,119 @@ function normalizeSectionName(name) {
   return name.replace(/\s*\d+$/, '').trim();
 }
 
-function generateBassLineForSong(songData, helpers, sectionCache) {
+// ---------------------------------------------------------------------------
+// Walking bass: replace the last beat of a chord slot with an approach note
+// ---------------------------------------------------------------------------
+function generateWalkingBassPhrase(context, lastEvent, helpers) {
+    const { chordName, durationTicks, timeSignature, startTick, songData, nextChordName } = context;
+    const { getChordRootAndType, NOTE_NAMES } = helpers;
+    const TPQN = typeof TICKS_PER_QUARTER_NOTE_REFERENCE !== 'undefined' ? TICKS_PER_QUARTER_NOTE_REFERENCE : 128;
+    const ticksPerBeat = (4 / timeSignature[1]) * TPQN;
+
+    if (durationTicks <= ticksPerBeat) {
+        return generateBassPhraseForSlot(context, lastEvent, helpers);
+    }
+
+    // Generate standard pattern for everything except the last beat
+    const mainContext = { ...context, durationTicks: durationTicks - ticksPerBeat };
+    const mainPhrase = generateBassPhraseForSlot(mainContext, lastEvent, helpers);
+
+    // Resolve chord roots to MIDI
+    const { root: curRoot } = getChordRootAndType(chordName);
+    const curRootIdx = NOTE_NAMES.indexOf(curRoot);
+    const curRootMidi = curRootIdx !== -1 ? curRootIdx + 36 : 36;
+
+    let nextRootMidi = null;
+    if (nextChordName) {
+        const { root: nxtRoot } = getChordRootAndType(nextChordName);
+        const nxtIdx = NOTE_NAMES.indexOf(nxtRoot);
+        if (nxtIdx !== -1) nextRootMidi = nxtIdx + 36;
+    }
+
+    // Pick approach note
+    let approachMidi;
+    if (nextRootMidi === null || nextRootMidi === curRootMidi) {
+        approachMidi = curRootMidi + 7; // fifth of current chord — classic turnaround
+    } else {
+        const direction = Math.sign(nextRootMidi - curRootMidi);
+        approachMidi = nextRootMidi - direction; // one chromatic step before the next root
+    }
+    approachMidi = Math.max(BASS_PARAMS.PITCH_RANGE.min, Math.min(BASS_PARAMS.PITCH_RANGE.max, approachMidi));
+
+    mainPhrase.push({
+        pitch: [approachMidi],
+        duration: `T${Math.round(ticksPerBeat)}`,
+        startTick: startTick + durationTicks - ticksPerBeat,
+        velocity: humanizeVelocity(80, 12)
+    });
+
+    return mainPhrase;
+}
+
+// ---------------------------------------------------------------------------
+// Generative bass: weight-driven note + duration selection
+// ---------------------------------------------------------------------------
+function generateGenerativeBassPhrase(context, lastEvent, helpers) {
+    const { chordName, durationTicks, timeSignature, startTick, songData } = context;
+    const { getChordRootAndType, getChordNotes, getDiatonicChords, NOTE_NAMES } = helpers;
+    const TPQN = typeof TICKS_PER_QUARTER_NOTE_REFERENCE !== 'undefined' ? TICKS_PER_QUARTER_NOTE_REFERENCE : 128;
+    const ticksPerBeat = (4 / timeSignature[1]) * TPQN;
+
+    const { root, type } = getChordRootAndType(chordName);
+    const chordResult = getChordNotes(root, type);
+    const chordNotes = (chordResult && chordResult.notes) ? chordResult.notes : [root];
+
+    const rootIdx = NOTE_NAMES.indexOf(root);
+    const rootMidi = rootIdx !== -1 ? rootIdx + 36 : 36;
+    const fifthMidi = chordNotes[2] ? (() => { const i = NOTE_NAMES.indexOf(chordNotes[2]); return i !== -1 ? i + 36 : rootMidi + 7; })() : rootMidi + 7;
+    const thirdMidi = chordNotes[1] ? (() => { const i = NOTE_NAMES.indexOf(chordNotes[1]); return i !== -1 ? i + 36 : rootMidi + 4; })() : rootMidi + 4;
+
+    // Scale passing note
+    let passingMidi = rootMidi + 2;
+    if (typeof getDiatonicChords === 'function' && songData.keySignatureRoot && songData.keyModeName) {
+        const diatonics = getDiatonicChords(songData.keySignatureRoot, songData.keyModeName);
+        const scaleRoots = diatonics.map(c => { const { root: r } = getChordRootAndType(c); const i = NOTE_NAMES.indexOf(r); return i !== -1 ? i + 36 : null; }).filter(Boolean);
+        const passing = scaleRoots.filter(p => p !== rootMidi && p !== fifthMidi && p !== thirdMidi);
+        if (passing.length > 0) passingMidi = passing[Math.floor(Math.random() * passing.length)];
+    }
+
+    // Duration weights: 70% = 1 beat, 20% = 0.5 beats, 10% = 2 beats
+    const durPool = [{ beats: 1.0, w: 70 }, { beats: 0.5, w: 20 }, { beats: 2.0, w: 10 }];
+    // Note weights: root 40%, fifth 25%, third 20%, passing 15%
+    const notePool = [{ p: rootMidi, w: 40 }, { p: fifthMidi, w: 25 }, { p: thirdMidi, w: 20 }, { p: passingMidi, w: 15 }];
+
+    const weightedPick = (pool) => {
+        const total = pool.reduce((s, x) => s + x.w, 0);
+        let r = Math.random() * total;
+        for (const x of pool) { r -= x.w; if (r <= 0) return x; }
+        return pool[0];
+    };
+
+    const events = [];
+    let currentTick = 0;
+
+    while (currentTick < durationTicks) {
+        const remaining = durationTicks - currentTick;
+        const durBeats = weightedPick(durPool).beats;
+        const durTicks = Math.min(Math.round(durBeats * ticksPerBeat), remaining);
+        if (durTicks <= 0) break;
+
+        const chosen = weightedPick(notePool);
+        const pitch = Math.max(BASS_PARAMS.PITCH_RANGE.min, Math.min(BASS_PARAMS.PITCH_RANGE.max, chosen.p));
+
+        events.push({
+            pitch: [pitch],
+            duration: `T${durTicks}`,
+            startTick: startTick + currentTick,
+            velocity: humanizeVelocity(pitch === rootMidi ? 85 : 65, 12, currentTick % ticksPerBeat, ticksPerBeat)
+        });
+        currentTick += durTicks;
+    }
+
+    return events;
+}
+
+function generateBassLineForSong(songData, helpers, sectionCache, bassMode = 'pattern') {
     const bassLine = [];
     let lastEvent = null;
 
@@ -269,6 +381,7 @@ function generateBassLineForSong(songData, helpers, sectionCache) {
         const sectionBassLine = [];
 
         section.mainChordSlots.forEach((slot, slotIndex) => {
+            const nextSlot = section.mainChordSlots[slotIndex + 1] || null;
             const context = {
                 chordName: slot.chordName,
                 durationTicks: slot.effectiveDurationTicks,
@@ -276,9 +389,17 @@ function generateBassLineForSong(songData, helpers, sectionCache) {
                 startTick: section.startTick + slot.effectiveStartTickInSection,
                 songData,
                 sectionIndex,
-                slotIndex
+                slotIndex,
+                nextChordName: nextSlot ? nextSlot.chordName : null
             };
-            const phrase = generateBassPhraseForSlot(context, lastEvent, helpers);
+            let phrase;
+            if (bassMode === 'walking') {
+                phrase = generateWalkingBassPhrase(context, lastEvent, helpers);
+            } else if (bassMode === 'generative') {
+                phrase = generateGenerativeBassPhrase(context, lastEvent, helpers);
+            } else {
+                phrase = generateBassPhraseForSlot(context, lastEvent, helpers);
+            }
             if (phrase.length > 0) {
                 lastEvent = phrase[phrase.length - 1];
             }

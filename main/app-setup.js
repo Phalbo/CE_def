@@ -106,8 +106,64 @@ document.addEventListener('DOMContentLoaded', () => {
         addListener('generateDronesButton', () => addTrackToMidiData('Drones', generateDronesForSong(currentMidiData, { getChordNotes, NOTE_NAMES, normalizeSectionName, getRandomElement, getPitchFromSymbol, getChordRootAndType, getDiatonicChords }, sectionCache)));
         addListener('generatePercussionButton', () => addTrackToMidiData('Percussion', generatePercussionForSong(currentMidiData, { getChordNotes, NOTE_NAMES, normalizeSectionName, getRandomElement, getPitchFromSymbol, getChordRootAndType, getDiatonicChords }, sectionCache)));
         addListener('generateGlitchFxButton', () => addTrackToMidiData('GlitchFx', generateGlitchFxForSong(currentMidiData, { getChordNotes, NOTE_NAMES, normalizeSectionName, getRandomElement }, sectionCache)));
+
+        // Phase 3 new actions
+        addListener('previewButton', playPreview);
+        addListener('stopPreviewButton', stopPreview);
+        addListener('savePdfButton', handleSavePDF);
     };
 });
+
+/**
+ * Capture #songOutput with html2canvas and save as PDF via jsPDF.
+ * Degrades gracefully if either CDN library failed to load.
+ */
+async function handleSavePDF() {
+    if (!currentMidiData) { alert('Generate a song first.'); return; }
+
+    if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+        alert('PDF libraries are not available. Check your internet connection and reload the page.');
+        return;
+    }
+
+    const pdfBtn = document.getElementById('savePdfButton');
+    if (pdfBtn) { pdfBtn.disabled = true; pdfBtn.textContent = 'Generating PDF…'; }
+
+    try {
+        const songOutput = document.getElementById('songOutput');
+        const canvas = await html2canvas(songOutput, { scale: 2, useCORS: true, logging: false });
+        const imgData = canvas.toDataURL('image/png');
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+        const title = currentMidiData.displayTitle || currentMidiData.title || 'CapricEngine Song';
+        const key = currentMidiData.fullKeyName || 'Unknown Key';
+        const mood = document.getElementById('mood')?.value?.replace(/_/g, ' ') || '';
+        const structure = document.getElementById('songStructure')?.options[document.getElementById('songStructure')?.selectedIndex]?.text || '';
+
+        pdf.setFontSize(18);
+        pdf.text(title, 10, 14);
+        pdf.setFontSize(9);
+        pdf.text(`Key: ${key}  |  BPM: ${currentMidiData.bpm}  |  Mood: ${mood}  |  Structure: ${structure}`, 10, 21);
+        pdf.setDrawColor(180);
+        pdf.line(10, 23, 200, 23);
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const imgWidth = pageWidth - 20;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 10, 27, imgWidth, imgHeight);
+
+        const fileName = (currentMidiData.title || 'capricengine').replace(/[^a-zA-Z0-9_]/g, '_') + '.pdf';
+        pdf.save(fileName);
+    } catch (e) {
+        console.error('PDF generation error:', e);
+        alert('Could not generate PDF. See console for details.');
+    } finally {
+        if (pdfBtn) { pdfBtn.disabled = false; pdfBtn.textContent = 'Save PDF'; }
+    }
+}
 
 function addTrackToMidiData(trackName, trackEvents) {
     if (!currentMidiData) {

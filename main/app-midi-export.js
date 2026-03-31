@@ -210,7 +210,8 @@ function handleGenerateChordRhythm(returnOnly = false) {
                         startTickAbsolute: section.startTick + slot.effectiveStartTickInSection,
                         durationTicks: slot.effectiveDurationTicks,
                         timeSignature: slot.timeSignature,
-                        sectionType: (section.name || '').toLowerCase()
+                        sectionType: (section.name || '').toLowerCase(),
+                        energyLevel: section.energyLevel != null ? section.energyLevel : 0.5 // Group 7
                     };
                     const eventsForThisSlot = generateChordRhythmEvents(currentMidiData, CHORD_LIB, NOTE_NAMES, helpers, slotContext);
                     if (eventsForThisSlot) {

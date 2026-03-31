@@ -407,6 +407,19 @@ async function generateSongArchitecture() {
                 currentMidiData
             );
 
+            // Group 7: energy arc — 0 (quiet) to 1 (peak)
+            const _sn = sectionNameString.toLowerCase();
+            let _energy = 0.5;
+            if      (_sn.includes('intro'))                             _energy = 0.28;
+            else if (_sn.includes('outro'))                             _energy = 0.22;
+            else if (_sn.includes('breakdown') || _sn.includes('quiet')) _energy = 0.20;
+            else if (_sn.includes('pre-chorus') || _sn.includes('prechorus')) _energy = 0.65;
+            else if (_sn.includes('chorus'))                            _energy = 0.90;
+            else if (_sn.includes('solo'))                              _energy = 0.80;
+            else if (_sn.includes('build'))                             _energy = 0.72;
+            else if (_sn.includes('bridge'))                            _energy = 0.55;
+            else if (_sn.includes('verse'))                             _energy = 0.50;
+
             rawMidiSectionsData.push({
                 name: sectionNameString,
                 key: selectedKey.root,
@@ -417,7 +430,8 @@ async function generateSongArchitecture() {
                 startTick: currentGlobalTickForTS,
                 id: `section-${sectionIndex}`,
                 detailedHarmonicEvents: [],
-                mainChordSlots: [] // Aggiunto per i generatori melodici
+                mainChordSlots: [], // Aggiunto per i generatori melodici
+                energyLevel: _energy  // Group 7: 0–1 energy arc
             });
 
             const beatsPerMeasureInSection = activeTimeSignatureForSectionLogic[0];

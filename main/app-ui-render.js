@@ -88,29 +88,37 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
         return;
     }
     actionButtonsContainer.innerHTML = `
-        <h3 class="chord-glossary-title section-header-title">
-            download your global hit in MIDI format<br>
-        </h3>
-        <div id="generator-row-1" class="button-container">
-          <button id="saveSongButton" class="action-button">Save Song Data</button>
-          <button id="savePdfButton" class="action-button">Save PDF</button>
-          <button id="previewButton" class="action-button">&#9654; Preview</button>
-          <button id="stopPreviewButton" class="action-button" disabled>&#9632; Stop</button>
-          <button id="downloadSingleTrackChordMidiButton" class="action-button">Pad</button>
-          <button id="generateChordRhythmButton" class="action-button">Arpeggiator</button>
-          <button id="generateMelodyButton" class="action-button">Inspiration (Melody)</button>
-          <button id="generateVocalLineButton" class="action-button">Vocals</button>
-          <button id="generateBassLineButton" class="action-button">Bass</button>
-          <button id="generateDrumTrackButton" class="action-button">LingoStarr (drum)</button>
+        <div class="btn-group-section">
+          <span class="btn-group-label">Main Generators</span>
+          <div class="btn-group-row">
+            <button id="previewButton" class="action-button">&#9654; Preview</button>
+            <button id="stopPreviewButton" class="action-button" disabled>&#9632; Stop</button>
+            <button id="downloadSingleTrackChordMidiButton" class="action-button">Pad</button>
+            <button id="generateChordRhythmButton" class="action-button">Arpeggiator</button>
+            <button id="generateMelodyButton" class="action-button">Inspiration (Melody)</button>
+            <button id="generateVocalLineButton" class="action-button">Vocals</button>
+            <button id="generateBassLineButton" class="action-button">Bass</button>
+            <button id="generateDrumTrackButton" class="action-button">LingoStarr (drum)</button>
+          </div>
         </div>
-        <div id="generator-row-2" class="button-container">
-          <button id="generateCountermelodyButton" class="action-button">Countermelody</button>
-          <button id="generateTextureButton" class="action-button">Texture</button>
-          <button id="generateOrnamentButton" class="action-button">Ornament</button>
-          <button id="generateMiasmaticButton" class="action-button">Miasmatic</button>
-          <button id="generateDronesButton" class="action-button">Drones</button>
-          <button id="generatePercussionButton" class="action-button">Percussion</button>
-          <button id="generateGlitchFxButton" class="action-button">Glitch fx</button>
+        <div class="btn-group-section">
+          <span class="btn-group-label">Extra Generators</span>
+          <div class="btn-group-row">
+            <button id="generateCountermelodyButton" class="action-button">Countermelody</button>
+            <button id="generateTextureButton" class="action-button">Texture</button>
+            <button id="generateOrnamentButton" class="action-button">Ornament</button>
+            <button id="generateMiasmaticButton" class="action-button">Miasmatic</button>
+            <button id="generateDronesButton" class="action-button">Drones</button>
+            <button id="generatePercussionButton" class="action-button">Percussion</button>
+            <button id="generateGlitchFxButton" class="action-button">Glitch fx</button>
+          </div>
+        </div>
+        <div class="btn-group-section btn-group-export">
+          <span class="btn-group-label">Export</span>
+          <div class="btn-group-row">
+            <button id="saveSongButton" class="action-button">Save Song Data</button>
+            <button id="savePdfButton" class="action-button">Save PDF</button>
+          </div>
         </div>
     `;
 

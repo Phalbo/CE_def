@@ -768,18 +768,32 @@ button#generateGlitchFxButton:hover { background: var(--btn-glitch-bg); color: #
 
 /* === BUTTON GROUP SECTIONS === */
 .btn-group-section {
-  margin-bottom: var(--space-sm);
-  padding: var(--space-xs) 0 var(--space-sm);
+  width: 100%;
+  flex-basis: 100%;
+  margin-bottom: var(--space-xs);
+  padding: var(--space-xs) 0 var(--space-xs);
+}
+.btn-group-section + .btn-group-section {
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-sm);
 }
 .btn-group-label {
   display: block;
-  font-size: 0.68em;
+  font-size: 0.65em;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1.4px;
+  letter-spacing: 1.5px;
   color: var(--text-muted);
   margin-bottom: var(--space-xs);
   padding-left: 2px;
+}
+.btn-group-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+.btn-group-export .btn-group-row {
+  justify-content: flex-end;
 }
 
 /* === MEDIA QUERIES === */

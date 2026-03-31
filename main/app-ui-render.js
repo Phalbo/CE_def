@@ -34,7 +34,8 @@ function updateChordEntryDisplay(fundamentalChordName) {
         chordData.currentShapeIndex = 0;
     }
 
-    const randomIndex = Math.floor(Math.random() * chordData.shapes.length);
+    const rng = (typeof seededRandom === 'function') ? seededRandom : Math.random;
+    const randomIndex = Math.floor(rng() * chordData.shapes.length);
     const currentShape = chordData.shapes[randomIndex];
     chordData.currentShapeIndex = randomIndex;
 
@@ -88,39 +89,28 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
     }
     actionButtonsContainer.innerHTML = `
         <h3 class="chord-glossary-title section-header-title">
-            download your global hit in MIDI format
+            download your global hit in MIDI format<br>
         </h3>
-        <div class="btn-group-section">
-          <span class="btn-group-label">Actions</span>
-          <div class="button-container">
-            <button id="saveSongButton" class="action-button">Save Song Data</button>
-            <button id="savePdfButton" class="action-button">Save PDF</button>
-            <button id="previewButton" class="action-button">&#9654; Preview</button>
-            <button id="stopPreviewButton" class="action-button" disabled>&#9632; Stop</button>
-          </div>
+        <div id="generator-row-1" class="button-container">
+          <button id="saveSongButton" class="action-button">Save Song Data</button>
+          <button id="savePdfButton" class="action-button">Save PDF</button>
+          <button id="previewButton" class="action-button">&#9654; Preview</button>
+          <button id="stopPreviewButton" class="action-button" disabled>&#9632; Stop</button>
+          <button id="downloadSingleTrackChordMidiButton" class="action-button">Pad</button>
+          <button id="generateChordRhythmButton" class="action-button">Arpeggiator</button>
+          <button id="generateMelodyButton" class="action-button">Inspiration (Melody)</button>
+          <button id="generateVocalLineButton" class="action-button">Vocals</button>
+          <button id="generateBassLineButton" class="action-button">Bass</button>
+          <button id="generateDrumTrackButton" class="action-button">LingoStarr (drum)</button>
         </div>
-        <div class="btn-group-section">
-          <span class="btn-group-label">Main Generators</span>
-          <div class="button-container">
-            <button id="downloadSingleTrackChordMidiButton" class="action-button">Pad</button>
-            <button id="generateChordRhythmButton" class="action-button">Arpeggiator</button>
-            <button id="generateMelodyButton" class="action-button">Inspiration (Melody)</button>
-            <button id="generateVocalLineButton" class="action-button">Vocal Shame Machine</button>
-            <button id="generateBassLineButton" class="action-button">Deekonizer (bass)</button>
-            <button id="generateDrumTrackButton" class="action-button">LingoStarr (drum)</button>
-          </div>
-        </div>
-        <div class="btn-group-section">
-          <span class="btn-group-label">Extra Generators</span>
-          <div class="button-container">
-            <button id="generateCountermelodyButton" class="action-button">Countermelody</button>
-            <button id="generateTextureButton" class="action-button">Texture</button>
-            <button id="generateOrnamentButton" class="action-button">Ornament</button>
-            <button id="generateMiasmaticButton" class="action-button">Miasmatic</button>
-            <button id="generateDronesButton" class="action-button">Drones</button>
-            <button id="generatePercussionButton" class="action-button">Percussion</button>
-            <button id="generateGlitchFxButton" class="action-button">Glitch fx</button>
-          </div>
+        <div id="generator-row-2" class="button-container">
+          <button id="generateCountermelodyButton" class="action-button">Countermelody</button>
+          <button id="generateTextureButton" class="action-button">Texture</button>
+          <button id="generateOrnamentButton" class="action-button">Ornament</button>
+          <button id="generateMiasmaticButton" class="action-button">Miasmatic</button>
+          <button id="generateDronesButton" class="action-button">Drones</button>
+          <button id="generatePercussionButton" class="action-button">Percussion</button>
+          <button id="generateGlitchFxButton" class="action-button">Glitch fx</button>
         </div>
     `;
 
@@ -141,17 +131,33 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
     const mood = document.getElementById('mood').value;
     const moodProfile = MOOD_PROFILES[mood] || MOOD_PROFILES["very_normal_person"];
     const finalStyleNote = styleNote || moodProfile.styleNotes || "Experiment.";
+    const songId = songData.songId || '';
 
-    let output = `<h3 class="song-title-main">${displayTitle}</h3><div class="song-main-info">`;
+    let output = `<h3 class="song-title-main">${displayTitle}</h3>`;
+
+    // Song ID row (Group 3)
+    if (songId) {
+        output += `<div class="song-id-row">`;
+        output += `<span class="song-id-label">Song ID</span>`;
+        output += `<span class="song-id-value" id="song-id-display">${songId}</span>`;
+        output += `<button class="song-id-copy-btn" id="songIdCopyBtn" title="Copy Song ID">Copy ID</button>`;
+        output += `</div>`;
+        output += `<div class="song-regen-row">`;
+        output += `<input class="song-regen-input" id="regenTitleInput" type="text" placeholder="Paste a title to regenerate…" autocomplete="off">`;
+        output += `<button class="song-regen-btn" id="regenFromTitleBtn">↩ Load</button>`;
+        output += `</div>`;
+    }
+
+    output += `<div class="song-main-info">`;
     output += `<span class="info-pill"><span class="pill-label">Mood</span><span class="pill-value">${mood.replace(/_/g, ' ')}</span></span>`;
-    output += `<span class="info-pill"><span class="pill-label">Key</span><span class="pill-value">${fullKeyName || "N/A"}</span></span>`;
+    output += `<span class="info-pill"><span class="pill-label">Key</span><span class="pill-value">${fullKeyName || 'N/A'}</span></span>`;
     output += `<span class="info-pill"><span class="pill-label">BPM</span><span class="pill-value">${bpm}</span></span>`;
     output += `<span class="info-pill" id="initial-time-signature"><span class="pill-label">Meter</span><span class="pill-value">${timeSignatureChanges && timeSignatureChanges.length > 0 ? (timeSignatureChanges[0].ts[0] + '/' + timeSignatureChanges[0].ts[1]) : 'N/A'}</span></span>`;
     output += `<span class="info-pill" id="estimated-duration"></span>`;
     output += `<span class="info-pill pill-style-notes"><span class="pill-label">Style</span><span class="pill-value">${finalStyleNote}</span></span>`;
     output += `</div>`;
 
-    output += `<div class="timeline-scroll-wrapper"><div class="song-sections-timeline" id="song-timeline-container">`;
+    output += `<div class="song-sections-timeline" id="song-timeline-container">`;
     sections.forEach((sectionData, sectionIndex) => {
         if (sectionData.measures === 0) return; // Non renderizzare sezioni a zero misure
 
@@ -173,29 +179,35 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
         const sectionWidthPx = barUnitWidth * displayBarUnits;
         const sectionColorVarName = `--section-color-${cleanSectionNameForCssVar}`;
 
-        const chordsString = sectionData.mainChordSlots && sectionData.mainChordSlots.length > 0
-            ? sectionData.mainChordSlots.map(slot => slot.chordName).join(' | ')
-            : '(Instrumental/Silence)';
-        const chordsForCopy = chordsString.replace(/"/g, '&quot;');
-
         output += `<div class="timeline-section-card" id="timeline-section-${sectionIndex}"
                         style="--section-color-var: var(${sectionColorVarName}, var(--section-color-default)); width: ${sectionWidthPx}px;">`;
         output += `  <div class="section-card-header">${sectionTitleForDisplay}</div>`;
         output += `  <div class="section-card-body">`;
         output += `    <div class="section-card-chords-container">`;
-        output += `      <div class="section-card-chords" data-chords="${chordsForCopy}" data-has-chords="${!!(sectionData.mainChordSlots && sectionData.mainChordSlots.length > 0)}">${chordsString}</div>`;
+        const chordsString = sectionData.mainChordSlots && sectionData.mainChordSlots.length > 0
+            ? sectionData.mainChordSlots.map(slot => slot.chordName).join(' | ')
+            : '(Instrumental/Silence)';
+        output += `      <div class="section-card-chords" data-chords="${chordsString}" data-has-chords="${!!(sectionData.mainChordSlots && sectionData.mainChordSlots.length > 0)}">${chordsString}</div>`;
         output += `    </div>`;
         output += `    <div class="section-bars-label">${barCountActual} bars</div>`;
         output += `  </div>`;
         output += `  <div class="section-bar-grid" data-bar-count="${barCountActual}"></div>`;
-        output += `  <button class="section-copy-btn" data-copy-chords="${chordsForCopy}" title="Copy chord progression">Copy</button>`;
         output += `</div>`;
     });
-    output += `</div><p class="timeline-scroll-hint">&#8592; scroll to see all sections &#8594;</p></div>`;
+    output += `</div>`;
 
     output += `<section id="main-scale-display-section" class="main-content-section">`;
     output += `  <h3 class="section-header-title">Main Song Scale</h3>`;
-    output += `  <p><strong>${mainScaleText.replace(/<br\/?>/gi, ' ').replace(/<\/?em>/gi, '')}</strong></p>`;
+    const scaleDisplayText = mainScaleText.replace(/<br\/?>/gi, ' ').replace(/<\/?em>/gi, '');
+    output += `  <p><strong>${scaleDisplayText}</strong></p>`;
+    // Scale degree row (Group 9)
+    if (mainScaleParsedNotes && mainScaleParsedNotes.length > 0) {
+        const degreeNumerals = ['1','2','3','4','5','6','7'];
+        const noteCells = mainScaleParsedNotes.slice(0, 7).map((n, i) =>
+            `<span class="scale-degree-cell"><span class="scale-note">${n}</span><span class="scale-numeral">${degreeNumerals[i] || ''}</span></span>`
+        ).join('');
+        output += `  <div class="scale-degree-row">${noteCells}</div>`;
+    }
     if (mainScaleParsedNotes && mainScaleParsedNotes.length > 0 && typeof renderGuitarScaleDiagram === "function" && typeof renderPianoScaleDiagram === "function") {
         output += `  <div class="main-scale-diagram-container">`;
         output += `    <div class="diagram main-scale-guitar">${renderGuitarScaleDiagram(mainScaleParsedNotes, mainScaleParsedRoot, mainScaleParsedName)}</div>`;
@@ -210,8 +222,47 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
     output += `  <h3 class="chord-glossary-title section-header-title">Used Chords Glossary:</h3>`;
     output += `  <div class="chord-glossary-grid" id="chord-glossary-grid-container">`;
 
+    // Build section-to-chords map (preserve section order, deduplicate per section)
+    const sectionChordMap = []; // [{name, cleanName, chords:[]}]
+    const seenInSection = {}; // sectionCleanName -> Set of chord names
+    sections.forEach(sd => {
+        if (!sd.mainChordSlots || sd.mainChordSlots.length === 0) return;
+        const cleanName = getCleanSectionName(sd.name);
+        if (!seenInSection[cleanName]) {
+            seenInSection[cleanName] = new Set();
+            sectionChordMap.push({ name: sd.name.replace(/-/g, ' '), cleanName, chords: [] });
+        }
+        const entry = sectionChordMap.find(e => e.cleanName === cleanName);
+        sd.mainChordSlots.forEach(slot => {
+            const cn = slot.chordName;
+            if (cn && !seenInSection[cleanName].has(cn) && allGeneratedChordsSet.has(cn)) {
+                seenInSection[cleanName].add(cn);
+                entry.chords.push(cn);
+            }
+        });
+    });
+
+    // Render grouped glossary with section headers
+    const globalRendered = new Set();
+    sectionChordMap.forEach(sectionGroup => {
+        if (sectionGroup.chords.length === 0) return;
+        const colorVar = `var(--section-color-${sectionGroup.cleanName}, var(--section-color-default))`;
+        output += `<div class="glossary-section-header">`;
+        output += `<span class="glossary-section-badge" style="background:${colorVar}">${sectionGroup.name}</span>`;
+        output += `<span class="glossary-section-line"></span>`;
+        output += `</div>`;
+        sectionGroup.chords.forEach(fundamentalChordName_normalized => {
+            if (globalRendered.has(fundamentalChordName_normalized)) return;
+            globalRendered.add(fundamentalChordName_normalized);
+            const sanitizedChordNameId = sanitizeId(fundamentalChordName_normalized);
+            const chordEntryId = `entry-${sanitizedChordNameId}`;
+            output += `    <div class="chord-entry" id="${chordEntryId}"><p style="text-align:center; padding-top: 20px;">Loading ${fundamentalChordName_normalized}...</p></div>`;
+        });
+    });
+    // Fallback: any chords not placed in any section group
     allGeneratedChordsSet.forEach(fundamentalChordName_normalized => {
         if (typeof fundamentalChordName_normalized !== 'string' || !fundamentalChordName_normalized.trim() || fundamentalChordName_normalized.includes("_ERR")) return;
+        if (globalRendered.has(fundamentalChordName_normalized)) return;
         const sanitizedChordNameId = sanitizeId(fundamentalChordName_normalized);
         const chordEntryId = `entry-${sanitizedChordNameId}`;
         output += `    <div class="chord-entry" id="${chordEntryId}"><p style="text-align:center; padding-top: 20px;">Loading ${fundamentalChordName_normalized}...</p></div>`;
@@ -219,12 +270,6 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
     output += `  </div></section>`;
 
     songOutputDiv.innerHTML = output;
-
-    // Auto-scroll to results
-    const songOutputContainer = document.getElementById('song-output-container');
-    if (songOutputContainer) {
-        setTimeout(() => songOutputContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
-    }
 
     // Nuova logica per popolare dinamicamente i segmenti degli accordi
     sections.forEach((sectionData, sectionIndex) => {
@@ -323,8 +368,9 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
                 }
             }
 
+            const rngForShape = (typeof seededRandom === 'function') ? seededRandom : Math.random;
             const randomIndexForShape = chordEntryInLib.shapes.length > 0 ?
-                Math.floor(Math.random() * chordEntryInLib.shapes.length) : 0;
+                Math.floor(rngForShape() * chordEntryInLib.shapes.length) : 0;
 
             glossaryChordData[fundamentalChordName_normalized] = {
                 fundamentalDisplayName: fundamentalChordName_normalized,
@@ -343,7 +389,20 @@ async function renderSongOutput(songData, allGeneratedChordsSet, styleNote, main
             const entryDiv = document.getElementById(chordEntryId);
 
             if (entryDiv) {
-                let entryHtmlContent = `<strong>${currentFundamentalData.fundamentalDisplayName}</strong>`;
+                // Build tooltip text: quality + intervals in semitones
+                const { type: chordSuffix } = getChordRootAndType(fundamentalChordName_normalized);
+                const qualityDefForTooltip = typeof QUALITY_DEFS !== 'undefined'
+                    ? Object.values(QUALITY_DEFS).find(q => q.suffix === chordSuffix)
+                    : null;
+                const qualityLabel = qualityDefForTooltip ? qualityDefForTooltip.quality : (chordSuffix || 'Maggiore');
+                const intervalStr = qualityDefForTooltip && qualityDefForTooltip.intervals
+                    ? qualityDefForTooltip.intervals.join(' – ')
+                    : '';
+                const tooltipText = intervalStr
+                    ? `${qualityLabel} · semitones: ${intervalStr}`
+                    : qualityLabel;
+
+                let entryHtmlContent = `<strong class="chord-name-tooltip" data-tooltip="${tooltipText}">${currentFundamentalData.fundamentalDisplayName}</strong>`;
                 entryHtmlContent += `<code>Notes: ${currentFundamentalData.fundamentalNotes.join(" ")}</code>`;
                 entryHtmlContent += `<div class="diagram-container" data-chord="${fundamentalChordName_normalized}">`;
 

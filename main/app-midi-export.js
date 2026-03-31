@@ -1,10 +1,5 @@
-// File: main/app-midi-export.js - v2.25
+// File: main/app-midi-export.js - v2.24
 // Gestisce l'esportazione MIDI e il salvataggio dei dati testuali.
-
-function _notify(msg, type = 'error') {
-    if (typeof showToast === 'function') showToast(msg, type);
-    else _notify(msg);
-}
 
 function buildSongDataForTextFile() {
     if (!currentMidiData) {
@@ -64,8 +59,7 @@ function buildSongDataForTextFile() {
 function handleSaveSong() {
     buildSongDataForTextFile();
     if(!currentSongDataForSave || !currentSongDataForSave.content) {
-        if (typeof showToast === 'function') showToast('No song data to save. Generate a song first.', 'error');
-        else _notify("No song data to save. Please generate a song first.");
+        alert("No song data to save. Please generate a song first.");
         return;
     }
     const blob = new Blob([currentSongDataForSave.content],{type:'text/plain;charset=utf-8'});
@@ -79,12 +73,11 @@ function handleSaveSong() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    if (typeof showToast === 'function') showToast('Song data saved!', 'success');
 }
 
 function downloadSingleTrackMidi(trackName, midiEvents, fileName, bpm, timeSignatureChanges) {
     if (!midiEvents || midiEvents.length === 0) {
-        _notify(`No MIDI events generated for ${trackName}.`);
+        alert(`No MIDI events generated for ${trackName}.`);
         return;
     }
 
@@ -157,7 +150,7 @@ function downloadSingleTrackMidi(trackName, midiEvents, fileName, bpm, timeSigna
 }
 
 function handleGenerateSingleTrackChordMidi(returnOnly = false) {
-    if (!currentMidiData || !currentMidiData.sections) { if(!returnOnly) _notify("Please generate a song first."); return; }
+    if (!currentMidiData || !currentMidiData.sections) { if(!returnOnly) alert("Please generate a song first."); return; }
     const { title, bpm, sections, timeSignatureChanges } = currentMidiData;
     const chordMIDIEvents = [];
 
@@ -199,8 +192,8 @@ function handleGenerateSingleTrackChordMidi(returnOnly = false) {
 }
 
 function handleGenerateChordRhythm(returnOnly = false) {
-    if (!currentMidiData || !currentMidiData.sections) { if(!returnOnly) _notify("Please generate a song first."); return; }
-    if (typeof generateChordRhythmEvents !== "function") { if(!returnOnly) _notify("Internal Error: Arpeggiator function not found."); return; }
+    if (!currentMidiData || !currentMidiData.sections) { if(!returnOnly) alert("Please generate a song first."); return; }
+    if (typeof generateChordRhythmEvents !== "function") { if(!returnOnly) alert("Internal Error: Arpeggiator function not found."); return; }
 
     const arpeggiatorBtn = document.getElementById('generateChordRhythmButton');
     if (arpeggiatorBtn && !returnOnly) { arpeggiatorBtn.disabled = true; arpeggiatorBtn.textContent = "Creating Arpeggio..."; }
@@ -217,7 +210,8 @@ function handleGenerateChordRhythm(returnOnly = false) {
                         startTickAbsolute: section.startTick + slot.effectiveStartTickInSection,
                         durationTicks: slot.effectiveDurationTicks,
                         timeSignature: slot.timeSignature,
-                        sectionType: (section.name || '').toLowerCase()
+                        sectionType: (section.name || '').toLowerCase(),
+                        energyLevel: section.energyLevel != null ? section.energyLevel : 0.5 // Group 7
                     };
                     const eventsForThisSlot = generateChordRhythmEvents(currentMidiData, CHORD_LIB, NOTE_NAMES, helpers, slotContext);
                     if (eventsForThisSlot) {
@@ -230,13 +224,12 @@ function handleGenerateChordRhythm(returnOnly = false) {
         if (allRhythmicChordEvents.length > 0) {
             const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_Arpeggio.mid`;
             downloadSingleTrackMidi(`Arpeggio`, allRhythmicChordEvents, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);
-            if (typeof showToast === 'function') showToast('Arpeggio MIDI downloaded!', 'success');
         } else {
-            _notify("Could not generate arpeggio with the current data.");
+            alert("Could not generate arpeggio with the current data.");
         }
     } catch (e) {
         console.error("Error during arpeggio generation:", e, e.stack);
-        _notify("Critical error during arpeggio generation. Check the console.");
+        alert("Critical error during arpeggio generation. Check the console.");
     } finally {
         if (arpeggiatorBtn) { arpeggiatorBtn.disabled = false; arpeggiatorBtn.textContent = "Arpeggiator"; }
     }
@@ -244,9 +237,9 @@ function handleGenerateChordRhythm(returnOnly = false) {
 
 function handleGenerateMelody() {
     if (!currentMidiData || !currentMidiData.sections || !currentMidiData.mainScaleNotes || currentMidiData.mainScaleNotes.length === 0) {
-        _notify("Song data is missing. Please generate a full structure first."); return;
+        alert("Song data is missing. Please generate a full structure first."); return;
     }
-    if (typeof generateMelodyForSong !== "function") { _notify("Internal Error: Melody generator not found."); return; }
+    if (typeof generateMelodyForSong !== "function") { alert("Internal Error: Melody generator not found."); return; }
 
     const melodyBtn = document.getElementById('generateMelodyButton');
     if(melodyBtn) { melodyBtn.disabled = true; melodyBtn.textContent = "Creating Melody...";}
@@ -255,20 +248,19 @@ function handleGenerateMelody() {
         if (generatedMelody && generatedMelody.length > 0) {
             const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_Melody.mid`;
             downloadSingleTrackMidi(`Melody`, generatedMelody, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);
-            if (typeof showToast === 'function') showToast('Melody MIDI downloaded!', 'success');
-        } else { _notify("Could not generate a melody with the current data."); }
+        } else { alert("Could not generate a melody with the current data."); }
     } catch (e) {
         console.error("Critical error during melody generation:", e, e.stack);
-        _notify("Critical error during melody generation. Check the console.");
+        alert("Critical error during melody generation. Check the console.");
     }
     finally { if(melodyBtn){ melodyBtn.disabled = false; melodyBtn.textContent = "Inspiration (Melody)"; } }
 }
 
 function handleGenerateVocalLine() {
     if (!currentMidiData || !currentMidiData.sections || !currentMidiData.mainScaleNotes || currentMidiData.mainScaleNotes.length === 0) {
-        _notify("Song data is missing. Please generate a full structure first."); return;
+        alert("Song data is missing. Please generate a full structure first."); return;
     }
-    if (typeof generateVocalLineForSong !== "function") { _notify("Internal Error: Vocal generator not found."); return; }
+    if (typeof generateVocalLineForSong !== "function") { alert("Internal Error: Vocal generator not found."); return; }
 
     const vocalBtn = document.getElementById('generateVocalLineButton');
     if (vocalBtn) { vocalBtn.disabled = true; vocalBtn.textContent = "Creating Vocal Line..."; }
@@ -278,13 +270,12 @@ function handleGenerateVocalLine() {
         if (vocalLine && vocalLine.length > 0) {
             const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_Vocal.mid`;
             downloadSingleTrackMidi(`Vocal`, vocalLine, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);
-            if (typeof showToast === 'function') showToast('Vocal MIDI downloaded!', 'success');
-        } else { _notify("Could not generate a vocal line with the current data."); }
+        } else { alert("Could not generate a vocal line with the current data."); }
     } catch (e) {
         console.error("Error during vocal line generation:", e, e.stack);
-        _notify("Critical error during vocal line generation. Check the console.");
+        alert("Critical error during vocal line generation. Check the console.");
     }
-    finally { if (vocalBtn) { vocalBtn.disabled = false; vocalBtn.textContent = "Vocal Shame Machine"; } }
+    finally { if (vocalBtn) { vocalBtn.disabled = false; vocalBtn.textContent = "Vocals"; } }
 }
 
 function getScaleNotes(root, scale) {
@@ -297,35 +288,33 @@ function getScaleNotes(root, scale) {
 
 function handleGenerateBassLine() {
     if (!currentMidiData || !currentMidiData.sections || !currentMidiData.mainScaleNotes || currentMidiData.mainScaleNotes.length === 0) {
-        _notify("Song data is missing. Please generate a full structure first."); return;
+        alert("Song data is missing. Please generate a full structure first."); return;
     }
-    if (typeof generateBassLineForSong !== "function") { _notify("Internal Error: Bass generator not found."); return; }
+    if (typeof generateBassLineForSong !== "function") { alert("Internal Error: Bass generator not found."); return; }
 
     const bassBtn = document.getElementById('generateBassLineButton');
     if (bassBtn) { bassBtn.disabled = true; bassBtn.textContent = "Creating Bass Line..."; }
     try {
-        const bassMode = document.getElementById('bassMode')?.value || 'pattern';
-        // Clear bass section cache so mode change takes effect immediately
-        if (sectionCache) sectionCache.bass = {};
         const helpers = { getChordRootAndType, getChordNotes, getScaleNotes, getRandomElement, getDiatonicChords, NOTE_NAMES };
+        const bassModeRaw = document.getElementById('bassMode')?.value || 'pattern';
+        const bassMode = bassModeRaw === 'random' ? (['pattern','walking','generative'])[Math.floor(Math.random()*3)] : bassModeRaw;
         const bassLine = generateBassLineForSong(currentMidiData, helpers, sectionCache, bassMode);
         if (bassLine && bassLine.length > 0) {
             const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_Bass.mid`;
             downloadSingleTrackMidi(`Bass`, bassLine, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);
-            if (typeof showToast === 'function') showToast('Bass MIDI downloaded!', 'success');
-        } else { _notify("Could not generate a bass line with the current data."); }
+        } else { alert("Could not generate a bass line with the current data."); }
     } catch (e) {
         console.error("Error during bass line generation:", e, e.stack);
-        _notify("Critical error during bass line generation. Check the console.");
+        alert("Critical error during bass line generation. Check the console.");
     }
-    finally { if (bassBtn) { bassBtn.disabled = false; bassBtn.textContent = "Deekonizer (bass)"; } }
+    finally { if (bassBtn) { bassBtn.disabled = false; bassBtn.textContent = "Bass"; } }
 }
 
 function handleGenerateDrumTrack() {
     if (!currentMidiData || !currentMidiData.sections || currentMidiData.sections.length === 0 || !currentMidiData.bpm || !currentMidiData.timeSignatureChanges) {
-        _notify("Song data is missing. Please generate a full structure first."); return;
+        alert("Song data is missing. Please generate a full structure first."); return;
     }
-    if (typeof generateDrumTrackForSong !== "function") { _notify("Internal Error: Drum generator not found."); return; }
+    if (typeof generateDrumTrackForSong !== "function") { alert("Internal Error: Drum generator not found."); return; }
 
     const drumBtn = document.getElementById('generateDrumTrackButton');
     if (drumBtn) { drumBtn.disabled = true; drumBtn.textContent = "Creating Drum Track..."; }
@@ -336,11 +325,231 @@ function handleGenerateDrumTrack() {
         if (drumEvents && drumEvents.length > 0) {
             const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_Drums.mid`;
             downloadSingleTrackMidi(`Drums`, drumEvents, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);
-            if (typeof showToast === 'function') showToast('Drums MIDI downloaded!', 'success');
-        } else { _notify("Could not generate a drum track with the current data."); }
+        } else { alert("Could not generate a drum track with the current data."); }
     } catch (e) {
         console.error("Error during drum track generation:", e, e.stack);
-        _notify("Critical error during drum track generation: " + e.message);
+        alert("Critical error during drum track generation: " + e.message);
     }
     finally { if (drumBtn) { drumBtn.disabled = false; drumBtn.textContent = "LingoStarr (drum)"; } }
+}
+
+// ---------------------------------------------------------------------------
+// Group 4 — PDF Export (programmatic, no UI screenshot)
+// ---------------------------------------------------------------------------
+async function handleSavePDF() {
+    if (!currentMidiData) {
+        if (typeof showToast === 'function') showToast('No song data — generate a song first.', 'error');
+        else alert('No song data — generate a song first.');
+        return;
+    }
+
+    const btn = document.getElementById('savePdfButton');
+    if (btn) { btn.disabled = true; btn.textContent = 'Building PDF…'; }
+
+    try {
+        if (!window.jspdf) throw new Error('jsPDF not loaded.');
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+        const PAGE_W = 210;
+        const PAGE_H = 297;
+        const MARGIN = 15;
+        const CONTENT_W = PAGE_W - MARGIN * 2;
+        let y = MARGIN;
+        let pageNum = 1;
+
+        const addFooter = () => {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7);
+            doc.setTextColor(150, 150, 150);
+            doc.text('CapricEngine v5.2', MARGIN, PAGE_H - 8);
+            doc.text(`Page ${pageNum}`, PAGE_W - MARGIN, PAGE_H - 8, { align: 'right' });
+        };
+
+        const newPage = () => {
+            addFooter();
+            doc.addPage();
+            pageNum++;
+            y = MARGIN;
+        };
+
+        const checkBreak = (needed) => {
+            if (y + needed > PAGE_H - 20) newPage();
+        };
+
+        const { displayTitle, bpm, timeSignatureChanges, sections, fullKeyName } = currentMidiData;
+        const mood = document.getElementById('mood')?.value || '';
+        const songId = currentMidiData.songId || '';
+        const TPQN = typeof TICKS_PER_QUARTER_NOTE_REFERENCE !== 'undefined' ? TICKS_PER_QUARTER_NOTE_REFERENCE : 128;
+
+        // ── HEADER ──────────────────────────────────────────────────────────
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(22);
+        doc.setTextColor(26, 26, 26);
+        const titleLines = doc.splitTextToSize(displayTitle || 'Untitled', CONTENT_W);
+        doc.text(titleLines, MARGIN, y + 8);
+        y += titleLines.length * 10 + 2;
+
+        const ts = timeSignatureChanges && timeSignatureChanges.length > 0
+            ? `${timeSignatureChanges[0].ts[0]}/${timeSignatureChanges[0].ts[1]}`
+            : 'N/A';
+        const metaLine = `Key: ${fullKeyName || 'N/A'}  ·  BPM: ${bpm}  ·  Meter: ${ts}  ·  Mood: ${mood.replace(/_/g, ' ')}`;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(50, 50, 50);
+        doc.text(metaLine, MARGIN, y);
+        y += 6;
+
+        if (songId) {
+            doc.setFont('courier', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Song ID: ${songId}`, MARGIN, y);
+            y += 5;
+        }
+
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text('Generated by CapricEngine v5.2', MARGIN, y);
+        y += 7;
+
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.3);
+        doc.line(MARGIN, y, MARGIN + CONTENT_W, y);
+        y += 7;
+
+        // ── SONG STRUCTURE ──────────────────────────────────────────────────
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(26, 26, 26);
+        doc.text('SONG STRUCTURE', MARGIN, y);
+        y += 6;
+
+        sections.forEach(sd => {
+            if (sd.measures === 0) return;
+            checkBreak(12);
+
+            const sectionTs = sd.timeSignature;
+            const label = `${sd.name.toUpperCase()}  (${sd.measures} bars · ${sectionTs[0]}/${sectionTs[1]})`;
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8.5);
+            doc.setTextColor(70, 70, 70);
+            doc.text(label, MARGIN, y);
+            y += 4;
+
+            if (sd.mainChordSlots && sd.mainChordSlots.length > 0) {
+                const tpb = (4 / sectionTs[1]) * TPQN;
+                const chordStr = sd.mainChordSlots.map(slot => {
+                    const beats = (slot.effectiveDurationTicks / tpb).toFixed(1).replace(/\.0$/, '');
+                    return `${slot.chordName} (${beats}b)`;
+                }).join('  |  ');
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.setTextColor(40, 40, 40);
+                const lines = doc.splitTextToSize(chordStr, CONTENT_W - 6);
+                doc.text(lines, MARGIN + 4, y);
+                y += lines.length * 4.5 + 2;
+            } else {
+                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(8);
+                doc.setTextColor(130, 130, 130);
+                doc.text('(Instrumental / Silence)', MARGIN + 4, y);
+                y += 6;
+            }
+        });
+
+        y += 3;
+        doc.setDrawColor(200, 200, 200);
+        doc.line(MARGIN, y, MARGIN + CONTENT_W, y);
+        y += 8;
+
+        // ── CHORD GLOSSARY ──────────────────────────────────────────────────
+        checkBreak(24);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(26, 26, 26);
+        doc.text('CHORD GLOSSARY', MARGIN, y);
+        y += 7;
+
+        const COL_COUNT = 4;
+        const CELL_W = CONTENT_W / COL_COUNT;
+        const CELL_H = 32; // mm per chord cell (name + notes + diagram)
+        const DIAG_H = 20; // mm for diagram image
+
+        const chordNames = Object.keys(window.glossaryChordData || {});
+        let col = 0;
+        let rowY = y;
+
+        for (const chordName of chordNames) {
+            const chordData = (window.glossaryChordData || {})[chordName];
+            if (!chordData) continue;
+
+            const cellX = MARGIN + col * CELL_W;
+
+            // Chord name
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8);
+            doc.setTextColor(26, 26, 26);
+            doc.text(chordName, cellX + CELL_W / 2, rowY, { align: 'center' });
+
+            // Notes
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(6);
+            doc.setTextColor(90, 90, 90);
+            const notesStr = (chordData.fundamentalNotes || []).join(' ');
+            doc.text(notesStr, cellX + CELL_W / 2, rowY + 4, { align: 'center' });
+
+            // Guitar diagram via html2canvas
+            const sanitizedId = typeof sanitizeId === 'function' ? sanitizeId(chordName) : chordName.replace(/[^a-zA-Z0-9]/g, '_');
+            const guitarDiv = document.getElementById(`guitar-${sanitizedId}`);
+            if (guitarDiv && typeof html2canvas !== 'undefined') {
+                try {
+                    // Force white background on the element before capture
+                    const origBg = guitarDiv.style.background;
+                    guitarDiv.style.background = '#ffffff';
+                    const canvas = await html2canvas(guitarDiv, {
+                        backgroundColor: '#ffffff',
+                        scale: 2,
+                        logging: false,
+                        useCORS: true,
+                    });
+                    guitarDiv.style.background = origBg;
+                    const imgData = canvas.toDataURL('image/png');
+                    const imgW = CELL_W - 6;
+                    const imgH = DIAG_H;
+                    doc.addImage(imgData, 'PNG', cellX + 3, rowY + 6, imgW, imgH);
+                } catch (_e) {
+                    // skip diagram if capture fails
+                }
+            }
+
+            col++;
+            if (col >= COL_COUNT) {
+                col = 0;
+                rowY += CELL_H + 4;
+                y = rowY;
+                checkBreak(CELL_H + 4);
+                rowY = y;
+            }
+        }
+
+        // Final footer
+        addFooter();
+
+        // ── SAVE ────────────────────────────────────────────────────────────
+        const safeTitle = (displayTitle || 'song')
+            .replace(/[^a-zA-Z0-9 _\-]/g, '')
+            .replace(/\s+/g, '_')
+            .substring(0, 60);
+        doc.save(`${safeTitle}-CE52.pdf`);
+        if (typeof showToast === 'function') showToast('PDF saved!', 'success', 2500);
+
+    } catch (err) {
+        console.error('PDF export error:', err);
+        if (typeof showToast === 'function') showToast('PDF export failed — check console.', 'error');
+        else alert('PDF export failed. Check the console.');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Save PDF'; }
+    }
 }

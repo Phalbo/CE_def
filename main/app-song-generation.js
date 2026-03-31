@@ -331,8 +331,21 @@ async function generateSongArchitecture() {
             timeSignatureChanges = [{ tick: 0, ts: [...activeTimeSignatureForSectionLogic] }];
         }
 
-        const songTitle = generatePhalboTitle();
+        // Group 3: support regenerate-from-title
+        const songTitle = (window._overrideTitle && window._overrideTitle.trim())
+            ? window._overrideTitle.trim()
+            : generatePhalboTitle();
+        window._overrideTitle = null; // consume once
         const displaySongTitle = songTitle;
+
+        // Group 3: initialise the seeded RNG from the title
+        let songSeed = 0;
+        let songId = '';
+        if (typeof initSeedFromTitle === 'function') {
+            songSeed = initSeedFromTitle(songTitle);
+            songId = typeof seedToSongId === 'function' ? seedToSongId(songSeed) : String(songSeed);
+        }
+
         const styleNote = moodProfile.styleNotes || "Experiment.";
 
         currentMidiData = {
@@ -394,6 +407,19 @@ async function generateSongArchitecture() {
                 currentMidiData
             );
 
+            // Group 7: energy arc — 0 (quiet) to 1 (peak)
+            const _sn = sectionNameString.toLowerCase();
+            let _energy = 0.5;
+            if      (_sn.includes('intro'))                             _energy = 0.28;
+            else if (_sn.includes('outro'))                             _energy = 0.22;
+            else if (_sn.includes('breakdown') || _sn.includes('quiet')) _energy = 0.20;
+            else if (_sn.includes('pre-chorus') || _sn.includes('prechorus')) _energy = 0.65;
+            else if (_sn.includes('chorus'))                            _energy = 0.90;
+            else if (_sn.includes('solo'))                              _energy = 0.80;
+            else if (_sn.includes('build'))                             _energy = 0.72;
+            else if (_sn.includes('bridge'))                            _energy = 0.55;
+            else if (_sn.includes('verse'))                             _energy = 0.50;
+
             rawMidiSectionsData.push({
                 name: sectionNameString,
                 key: selectedKey.root,
@@ -404,7 +430,8 @@ async function generateSongArchitecture() {
                 startTick: currentGlobalTickForTS,
                 id: `section-${sectionIndex}`,
                 detailedHarmonicEvents: [],
-                mainChordSlots: [] // Aggiunto per i generatori melodici
+                mainChordSlots: [], // Aggiunto per i generatori melodici
+                energyLevel: _energy  // Group 7: 0–1 energy arc
             });
 
             const beatsPerMeasureInSection = activeTimeSignatureForSectionLogic[0];
@@ -492,6 +519,8 @@ async function generateSongArchitecture() {
         }
         currentMidiData.mainScaleNotes = mainScaleParsedNotes;
         currentMidiData.mainScaleRoot = mainScaleParsedRoot;
+        currentMidiData.songSeed = songSeed;
+        currentMidiData.songId = songId;
 
         rawMidiSectionsData.forEach(section => {
             if (section.key && section.scale) {

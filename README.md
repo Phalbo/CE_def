@@ -1,3 +1,46 @@
+## v5.2 — What's new
+
+CapricEngine v5.2 is a complete quality overhaul and visual redesign.
+
+### UI & Visual Identity
+- Full dark-mode redesign: new WCAG AA palette (electric indigo accent, #0F1117 background)
+- Compact header (64px desktop / 56px mobile), DM Serif Display for titles
+- Button hierarchy: Primary / Secondary (outlined) / Tertiary (ghost)
+- Pill badges for section types, smooth 150ms transitions throughout
+
+### Generation & Musicality
+- **Energy arc**: each section has a 0.0–1.0 `energyLevel` controlling density, velocity, drum kit entry
+- **Section coherence**: melody contour, vocal rhythm, drum patterns reused across repeated sections
+- **Arpeggiator musicality**: per-section rules (intro/verse/chorus/bridge/outro/solo)
+- **Bass mode selector**: Pattern / Walking / Generative / Random — picked at generation time
+
+### Song Identity & Replay
+- **Title-derived seed system**: same title → same song, every time
+- **Song ID**: base-36 encoded, displayed as "X7K2-39MQ-ALFA" below the title
+- **Regenerate from title**: type a previous title → exact song reproduced
+- **Copy Song ID** button saves title+seed string to clipboard
+
+### PDF Export (rebuilt)
+- Programmatic layout — no more dark UI screenshots
+- White background, A4 portrait, section-grouped chord glossary with diagrams
+- Song ID included in PDF header, page numbers in footer
+
+### Chord Display
+- Glossary grouped by section with color-coded badges
+- Randomized voicing seeded from song — consistent within a session
+- Pure-CSS hover tooltips: quality name, intervals, key function
+
+### Audio Preview (fixed)
+- Play/Stop properly reset Tone.js Transport
+- Limited to 5 generators: Pad, Melody, Bass, Drums, Vocals
+- Visual dot indicators: grey (not run) → green (active)
+
+### Other
+- Bug fixes: bass gaps, vocal silences, arpeggiator truncation, modal interchange
+- Multilingual title generator (IT/FR/DE word pools, 15% two-line subtitles)
+- Renamed: "Bass", "Vocals", "Mega Pop Hit"
+- Version string: v5.2 everywhere
+
 # CapricEngine v2.29
 
 ## Changelog (v2.29)

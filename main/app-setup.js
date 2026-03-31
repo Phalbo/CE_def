@@ -1,18 +1,13 @@
-// File: app-setup.js - v1.35
-// Responsabile dell'impostazione iniziale, creazione UI dinamica, listeners principali.
+// File: app-setup.js - v5.2
+// Setup, UI listeners, toast notifications, seed UI, Ctrl+Enter.
 
 let currentSongDataForSave = null;
 let glossaryChordData = {};
 let CHORD_LIB = {};
 let currentMidiData = null; // Dati della canzone attualmente generata
-let midiSectionTitleElement = null; // Elemento H3 per il titolo della sezione download MIDI
+let midiSectionTitleElement = null;
 
-/**
- * Show a transient toast notification.
- * @param {string} msg   - Message text
- * @param {'success'|'error'|'info'} [type='success']
- * @param {number} [duration=3000] - ms before auto-dismiss
- */
+/** Show a transient toast notification. */
 function showToast(msg, type = 'success', duration = 3000) {
     let container = document.getElementById('toast-container');
     if (!container) {
@@ -24,7 +19,6 @@ function showToast(msg, type = 'success', duration = 3000) {
     toast.className = `toast toast-${type}`;
     toast.textContent = msg;
     container.appendChild(toast);
-
     const dismiss = () => {
         toast.classList.add('toast-hiding');
         toast.addEventListener('animationend', () => toast.remove(), { once: true });
@@ -108,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Ctrl+Enter shortcut to generate
+    // Ctrl+Enter shortcut
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
@@ -116,17 +110,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Event delegation for "Copy Chords" buttons inside timeline section cards
+    // Event delegation: Song ID copy + regen from title (injected into #songOutput after render)
     document.addEventListener('click', (e) => {
-        const copyBtn = e.target.closest('.section-copy-btn');
-        if (!copyBtn) return;
-        const chords = copyBtn.dataset.copyChords || '';
-        if (!chords) return;
-        navigator.clipboard.writeText(chords).then(() => {
-            showToast('Chord progression copied!', 'info', 2000);
-        }).catch(() => {
-            showToast('Copy failed — check browser permissions.', 'error');
-        });
+        if (e.target.id === 'songIdCopyBtn') {
+            const idEl = document.getElementById('song-id-display');
+            const titleText = document.querySelector('.song-title-main')?.textContent || '';
+            const text = `${titleText}\nSong ID: ${idEl?.textContent || ''}`;
+            navigator.clipboard.writeText(text).then(() => showToast('Song ID copied!', 'info', 2000))
+                .catch(() => showToast('Copy failed — check permissions.', 'error'));
+        }
+        if (e.target.id === 'regenFromTitleBtn') {
+            const input = document.getElementById('regenTitleInput');
+            const title = input?.value?.trim();
+            if (!title) { showToast('Enter a title first.', 'error', 2000); return; }
+            if (typeof initSeedFromTitle === 'function' && typeof generateSongArchitecture === 'function') {
+                // Store the custom title so generateSongArchitecture can pick it up
+                window._overrideTitle = title;
+                generateSongArchitecture();
+            }
+        }
     });
 
     // Definisci attachActionListenersGlobal per essere chiamata dopo la generazione della UI
@@ -139,6 +141,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         addListener('saveSongButton', handleSaveSong);
+        addListener('savePdfButton', handleSavePDF);
+        addListener('previewButton', playPreview);
+        addListener('stopPreviewButton', stopPreview);
         addListener('downloadSingleTrackChordMidiButton', handleGeneratePad);
         addListener('generateChordRhythmButton', handleGenerateChordRhythm);
         addListener('generateMelodyButton', handleGenerateMelody);
@@ -153,76 +158,18 @@ document.addEventListener('DOMContentLoaded', () => {
         addListener('generateDronesButton', () => addTrackToMidiData('Drones', generateDronesForSong(currentMidiData, { getChordNotes, NOTE_NAMES, normalizeSectionName, getRandomElement, getPitchFromSymbol, getChordRootAndType, getDiatonicChords }, sectionCache)));
         addListener('generatePercussionButton', () => addTrackToMidiData('Percussion', generatePercussionForSong(currentMidiData, { getChordNotes, NOTE_NAMES, normalizeSectionName, getRandomElement, getPitchFromSymbol, getChordRootAndType, getDiatonicChords }, sectionCache)));
         addListener('generateGlitchFxButton', () => addTrackToMidiData('GlitchFx', generateGlitchFxForSong(currentMidiData, { getChordNotes, NOTE_NAMES, normalizeSectionName, getRandomElement }, sectionCache)));
-
-        // Phase 3 new actions
-        addListener('previewButton', playPreview);
-        addListener('stopPreviewButton', stopPreview);
-        addListener('savePdfButton', handleSavePDF);
     };
 });
 
-/**
- * Capture #songOutput with html2canvas and save as PDF via jsPDF.
- * Degrades gracefully if either CDN library failed to load.
- */
-async function handleSavePDF() {
-    if (!currentMidiData) { showToast('Generate a song first.', 'error'); return; }
-
-    if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-        showToast('PDF libraries unavailable. Check your internet connection.', 'error');
-        return;
-    }
-
-    const pdfBtn = document.getElementById('savePdfButton');
-    if (pdfBtn) { pdfBtn.disabled = true; pdfBtn.textContent = 'Generating PDF…'; }
-
-    try {
-        const songOutput = document.getElementById('songOutput');
-        const canvas = await html2canvas(songOutput, { scale: 2, useCORS: true, logging: false });
-        const imgData = canvas.toDataURL('image/png');
-
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-        const title = currentMidiData.displayTitle || currentMidiData.title || 'CapricEngine Song';
-        const key = currentMidiData.fullKeyName || 'Unknown Key';
-        const mood = document.getElementById('mood')?.value?.replace(/_/g, ' ') || '';
-        const structure = document.getElementById('songStructure')?.options[document.getElementById('songStructure')?.selectedIndex]?.text || '';
-
-        pdf.setFontSize(18);
-        pdf.text(title, 10, 14);
-        pdf.setFontSize(9);
-        pdf.text(`Key: ${key}  |  BPM: ${currentMidiData.bpm}  |  Mood: ${mood}  |  Structure: ${structure}`, 10, 21);
-        pdf.setDrawColor(180);
-        pdf.line(10, 23, 200, 23);
-
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const imgWidth = pageWidth - 20;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        pdf.addImage(imgData, 'PNG', 10, 27, imgWidth, imgHeight);
-
-        const fileName = (currentMidiData.title || 'capricengine').replace(/[^a-zA-Z0-9_]/g, '_') + '.pdf';
-        pdf.save(fileName);
-        showToast('PDF saved!', 'success');
-    } catch (e) {
-        console.error('PDF generation error:', e);
-        showToast('Could not generate PDF. See console for details.', 'error');
-    } finally {
-        if (pdfBtn) { pdfBtn.disabled = false; pdfBtn.textContent = 'Save PDF'; }
-    }
-}
-
 function addTrackToMidiData(trackName, trackEvents) {
     if (!currentMidiData) {
-        showToast('Please generate a song first.', 'error');
+        alert("Please generate a song first.");
         return;
     }
     if (trackEvents && trackEvents.length > 0) {
         const fileName = `${currentMidiData.title.replace(/[^a-zA-Z0-9_]/g, '_')}_${trackName}.mid`;
         downloadSingleTrackMidi(trackName, trackEvents, fileName, currentMidiData.bpm, currentMidiData.timeSignatureChanges);
-        showToast(`${trackName} MIDI downloaded!`, 'success');
     } else {
-        showToast(`Could not generate ${trackName} track.`, 'error');
+        alert(`Could not generate ${trackName} track with the current data.`);
     }
 }

@@ -1,257 +1,221 @@
-## v5.2 — What's new
+# CapricEngine v5.2
 
-CapricEngine v5.2 is a complete quality overhaul and visual redesign.
+**Algorithmic music generator — web-based, client-side, no build step.**  
+Generates complete song structures with chords, melody, bass, drums and additional layers, exported as multi-track MIDI files. In-browser audio preview via Tone.js.
 
-### UI & Visual Identity
-- Full dark-mode redesign: new WCAG AA palette (electric indigo accent, #0F1117 background)
-- Compact header (64px desktop / 56px mobile), DM Serif Display for titles
-- Button hierarchy: Primary / Secondary (outlined) / Tertiary (ghost)
-- Pill badges for section types, smooth 150ms transitions throughout
-
-### Generation & Musicality
-- **Energy arc**: each section has a 0.0–1.0 `energyLevel` controlling density, velocity, drum kit entry
-- **Section coherence**: melody contour, vocal rhythm, drum patterns reused across repeated sections
-- **Arpeggiator musicality**: per-section rules (intro/verse/chorus/bridge/outro/solo)
-- **Bass mode selector**: Pattern / Walking / Generative / Random — picked at generation time
-
-### Song Identity & Replay
-- **Title-derived seed system**: same title → same song, every time
-- **Song ID**: base-36 encoded, displayed as "X7K2-39MQ-ALFA" below the title
-- **Regenerate from title**: type a previous title → exact song reproduced
-- **Copy Song ID** button saves title+seed string to clipboard
-
-### PDF Export (rebuilt)
-- Programmatic layout — no more dark UI screenshots
-- White background, A4 portrait, section-grouped chord glossary with diagrams
-- Song ID included in PDF header, page numbers in footer
-
-### Chord Display
-- Glossary grouped by section with color-coded badges
-- Randomized voicing seeded from song — consistent within a session
-- Pure-CSS hover tooltips: quality name, intervals, key function
-
-### Audio Preview (fixed)
-- Play/Stop properly reset Tone.js Transport
-- Limited to 5 generators: Pad, Melody, Bass, Drums, Vocals
-- Visual dot indicators: grey (not run) → green (active)
-
-### Other
-- Bug fixes: bass gaps, vocal silences, arpeggiator truncation, modal interchange
-- Multilingual title generator (IT/FR/DE word pools, 15% two-line subtitles)
-- Renamed: "Bass", "Vocals", "Mega Pop Hit"
-- Version string: v5.2 everywhere
-
-# CapricEngine v2.29
-
-## Changelog (v2.29)
-
-*   **UI and Layout:**
-    *   Styled the "download your global hit in MIDI format" title to match the glossary title.
-    *   Fixed the button layout to be centered and responsive.
-    *   Standardized the button size to be uniform.
-*   **Bug Fixes:**
-    *   Fixed a critical bug that caused multiple MIDI files to be generated on a single click by centralizing the event listener handling.
-*   **Generator Improvements:**
-    *   **Countermelody:** Increased rhythmic density and melodic variety by using eighth notes and more complex arpeggio patterns.
-    *   **Texture:** Introduced chord inversions to create a more distinct harmonic texture.
-    *   **Ornament:** Added new "mordent" and "gruppetto" patterns, humanized note velocity, and added debug logs.
-    *   **Miasmatic:** Added 10 new patterns with syncopated rhythms and strategic pauses.
-    *   **Percussion:** Ensured that the correct MIDI notes are used for the drum kit and percussions, and that both tracks are exported on MIDI channel 10.
-    *   **Glitch FX:** Improved harmonic coherence by using notes from the current chord and added new "tape stop" and "reverse" effects.
-
-# CapricEngine v2.26
-
-## Changelog (v2.26)
-
-*   **Advanced Generators Integration:** Seven new advanced musical generators have been added to expand the creative possibilities of the engine. Each generator is equipped with its own musical logic and is fully integrated into the existing architecture, including section-based caching for musical consistency.
-    *   **Countermelody:** Creates a secondary melodic line that arpeggiates the chords, alternating between ascending and descending patterns to create movement and interest.
-    *   **Texture:** Generates an airy, generative pad using high-octave notes (root, fifth, ninth) with slight timing variations to create a "shimmering" effect.
-    *   **Drones:** Produces a sustained root note of the chord, with a small chance of playing the fifth or third to add subtle variation.
-    *   **Ornament:** Adds realistic musical embellishments, such as trills and grace notes, with a low probability at the end of chord slots.
-    *   **Miasmatic:** Uses a library of 15 "miasma" vocal riffs, dynamically varying the velocity, duration, and octave of each note to make every performance unique.
-    *   **Percussion:** Includes a library of Rock, Funk, and Latin rhythmic patterns. It uses a fallback algorithm for non-4/4 time signatures to ensure a coherent result.
-    *   **Glitch Fx:** Adds tempo-synced glitch effects (stutter, pitch riser, gate) that are randomly triggered on strong beats, anchoring the chaos to the song's structure.
-*   **Architectural Enhancements:**
-    *   **Multi-track MIDI Export:** The MIDI export logic has been upgraded to support an arbitrary number of tracks, allowing all new generated parts to be included in a single MIDI file.
-    *   **Centralized Track Management:** A new helper function, `addTrackToMidiData`, has been implemented to centralize the process of adding new tracks to the main song data object.
-*   **UI Fixes:**
-    *   Resolved a regression where action buttons would not appear after song generation. All generator buttons are now correctly displayed.
-
-# CapricEngine v2.25
-
-## Changelog (v2.25)
-
-*   **Dynamic Harmony Engine:** The harmonic engine now generates a variable number of chords per section (from 2 to 5) instead of a fixed number. This creates more natural and varied harmonic progressions.
-    *   The number of chords is chosen based on the section type (e.g., verses are more likely to have 3-5 chords, while bridges might have 2-3).
-    *   The rhythm of the chords is dynamically adjusted to fit the section's length, ensuring all instruments remain perfectly synchronized.
-    *   This change affects all generative modules (melody, bass, arpeggiator), which now adapt to the new harmonic structure.
-
-## Changelog (v2.24)
-
-*   **Surreal Title Generator:** Implemented a new Dada-inspired title generator (`phalbo-title-generator.js`) using extensive word libraries and `chance.js` for creative and unique song titles.
-*   **UI and Text Cleanup:**
-    *   Fully translated the UI and text file outputs to English.
-    *   Corrected the "Arpeggiator" button logic to prevent it from reverting to its old name.
-    *   Sanitized generated MIDI file names to be based on the new unique titles.
-    *   Removed obsolete sections from the generated text file for a cleaner output.
-*   **Enhanced Chord Glossary:** The initial view of a chord's fingering in the glossary is now randomized, offering more variety at first glance.
-*   **Bug Fixes:**
-    *   Consolidated the `getWeightedRandom` function into a single, robust version in `theory-helpers.js` to fix a critical `TypeError`.
-
-## Changelog (v2.23)
-
-*   **Arpeggiator Overhaul:**
-    *   Renamed "Chord Rhythm" generator to "Arpeggiator" for clarity.
-    *   Massively expanded the arpeggiator's capabilities with a wide variety of new melodic and rhythmic patterns.
-    *   Added support for chord inversions to create more melodic arpeggios.
-    *   Fixed a critical bug where the wrong `getWeightedRandom` function was being called, causing crashes.
-*   **Expanded Drum Library:**
-    *   Added a significant number of new, genre-specific drum patterns (Rock, Pop, Funk, Metal, Electronic).
-    *   Modularized the drum pattern library for easier future expansion.
-*   **UI Updates:**
-    *   Updated the UI to reflect the new "Arpeggiator" naming.
-
-## Changelog (v2.22)
-
-*   **MIDI Generation Overhaul:** Fixed critical bugs in the MIDI generation logic for all instruments.
-    *   Resolved issues with "gaps" between musical phrases and notes extending beyond their intended duration.
-    *   Ensured all tracks (Melody, Vocal, Bass, Drums) are perfectly synchronized.
-*   **Robust Caching System:** Implemented a reliable caching system for all generated parts (melody, vocals, basslines, and drum patterns).
-    *   Repeated sections (e.g., "Verse 1", "Verse 2") now have identical musical content, leading to more coherent and structured songs.
-    *   The cache is intelligently cleared for each new song generation.
-
-## Changelog (v2.21)
-
-*   **Modal Interchange:** Implemented an optional modal interchange feature that allows the generator to borrow chords from parallel modes. This can be enabled or disabled in the UI.
-*   **Bassline Improvements:**
-    *   The bassline generator now has a higher minimum note range to prevent notes from going too low.
-    *   Added a library of new rhythmic patterns for the bassline, increasing its variety.
-
-## Changelog (v2.20) 
-
-
-*   **Mood-Based Generation:** The song generation logic has been significantly improved to be more mood-aware.
-    *   **Song Structure Templates:** Added 20 new song structure templates, each with a descriptive name (e.g., "Build & Collapse", "Fast Spiral") and associated with a specific mood. The UI now displays these names and filters them based on the selected mood.
-    *   **Mood Profiles:** Introduced a new `MOOD_PROFILES` data structure that links moods to specific scales and style notes. This ensures a more coherent and context-aware musical output.
-    *   **Smarter Key Selection:** When "Random" is selected for the key, the engine now chooses from a list of scales appropriate for the selected mood.
-
-*   **UI/UX Improvements:**
-    *   The "Structure Template" dropdown is now dynamically populated based on the selected mood.
-    *   "Style Notes" are now displayed in the UI, providing a hint about the musical direction of the generated piece.
-
-*   **Code Refactoring:**
-    *   Replaced the old `MOOD_SONG_STRUCTURES` with the more comprehensive `MOOD_PROFILES`.
-    *   Refactored the song generation and UI rendering logic to use the new mood-based system.
-
-## Deployment
-
-### Requirements
-- **PHP 7.4+** (for `get_chord_data.php` chord voicing lookups)
-- **Apache** with `mod_rewrite`, `mod_headers`, `mod_deflate` enabled
-- **No npm / composer / build step** — all JS loaded via `<script>` tags
-
-### Quick Start (SiteGround / Plesk)
-1. Upload all files to your document root (or a subdirectory).
-2. The included `.htaccess` handles URL rewriting, caching, and gzip automatically.
-3. Verify `mod_rewrite` is enabled in your hosting panel; on SiteGround this is on by default.
-
-### Subdirectory path fix for `get_chord_data.php`
-If the app is served from a subdirectory (e.g. `https://example.com/capric/`), update the fetch URL in `main/app-ui-render.js`:
-
-```js
-// Change this line (~line 261):
-const positionsFromPHP = await fetchChordVoicings(chordRoot, chordSuffix);
-
-// Inside fetchChordVoicings (lib/chord-renderer.js or similar), set:
-const BASE_PATH = '/capric'; // adjust to your actual subdirectory
-const url = `${BASE_PATH}/get_chord_data.php?root=${root}&suffix=${suffix}`;
-```
-
-### Offline mode (no PHP)
-Replace the live `get_chord_data.php` calls with a static JSON fallback:
-1. Export the chord database to `lib/chord-db/chords-static.json` (key: `"Root_suffix"`, value: array of voicings).
-2. In `lib/chord-renderer.js`, replace the `fetch(…get_chord_data.php…)` call with:
-```js
-async function fetchChordVoicings(root, suffix) {
-    if (!_chordStaticDb) {
-        const res = await fetch('lib/chord-db/chords-static.json');
-        _chordStaticDb = await res.json();
-    }
-    return _chordStaticDb[`${root}_${suffix}`] || [];
-}
-```
-3. The rest of the app (MIDI export, audio preview, PDF) works identically with no PHP dependency.
+> Repository: github.com/Phalbo/[repo-name]  
+> Versioning starts at v5.2 — all prior versions are historical reference only.
 
 ---
 
-## Overview
+## v5.2 — What's new
 
-CapricEngine is a web-based application that procedurally generates musical compositions. It allows users to select a mood, tempo, and key, and then generates a complete song structure with chords, a bassline, a melody, and a drum track. The application is built with HTML, CSS, and JavaScript, and uses the `midiwriter.js` library to export the generated music as MIDI files.
+- Full UI redesign: dark-mode, WCAG AA palette, compact header, DM Serif Display + Inter fonts
+- Title-derived seed system: same title → same song, always. Song ID displayed and copyable.
+- "Regenerate from title" input: paste a previous title to reproduce an exact song
+- PDF rebuilt from scratch: white background, programmatic layout, section-grouped chords, no dark UI screenshots
+- Chord glossary: grouped by song section, randomized voicing (seeded), pure-CSS hover tooltips
+- Energy arc: per-section `energyLevel` (0.0–1.0) controls density, velocity, drum kit entry/exit
+- Section coherence: melody contour, vocal rhythm, drum patterns reused across repeated sections
+- Arpeggiator musicality: per-section rules (intro builds in, outro fades out, verse breathes)
+- Bass mode: Pattern / Walking / Generative / Random
+- Audio preview: Play/Stop fixed (Tone.js Transport properly reset), limited to 5 generators (Pad · Melody · Bass · Drums · Vocals)
+- Visual dot indicators on generator buttons: grey = not run, green = active in preview
+- Multilingual title generator: IT/FR/DE word pools, 15% chance of two-line subtitle
+- Bug fixes: bass tick gaps, vocal infinite silences, arpeggiator rest truncation, modal interchange silent errors
+- Renamed labels: "Bass" (was Deekonizer), "Vocals" (was Vocal Shame Machine), "Mega Pop Hit" (was Very Normal Person)
+- Scale degree display: note names + 1 2 3 4 5 6 7 below scale name
+- Per-section MIDI export buttons inside each section card
+- Chord hover tooltip: quality name, intervals, function in key
+
+---
 
 ## Architecture
 
-The application is divided into several modules, each responsible for a specific part of the song generation process.
+Fully static app: HTML + CSS + vanilla JS. One PHP endpoint (`get_chord_data.php`) for chord voicing lookups. No npm, no build step, no framework. All JS loaded via `<script>` tags in `index.html` in strict dependency order.
 
-### Core Modules
+### Critical data contract — do not break
 
-*   **`main/app-song-generation.js`**: This is the main module that orchestrates the song generation process. It defines the song structure, generates the chord progression, and creates the `mainChordSlots` that are used by the other generators.
-*   **`main/app-midi-export.js`**: This module handles the creation and download of MIDI files for each track. It contains functions to generate the MIDI events for the chords, bassline, melody, and drums.
-*   **`main/app-ui-render.js`**: This module is responsible for rendering the generated song data in the user interface. It displays the song structure, chords, and other information.
-*   **`main/app-setup.js`**: This module initializes the application, sets up the user interface, and attaches event listeners to the various controls.
+**`mainChordSlots`** is the central object produced by `app-song-generation.js` and consumed by every generator and by `app-midi-export.js`. Structure per slot:
 
-### Generator Modules
+```js
+{
+  sectionName: "Chorus 1",        // e.g. "Verse 1", "Bridge"
+  cleanSectionName: "chorus",     // CSS/cache key, no numbers
+  chordName: "Cmaj7",
+  chordNotes: [60, 64, 67, 71],   // MIDI note numbers
+  startTick: 0,                   // absolute tick position
+  durationTicks: 512,             // slot duration in ticks
+  timeSignature: [4, 4],
+  energyLevel: 0.85               // 0.0–1.0, used by all generators
+}
+```
 
+**`app-midi-export.js` core logic must not be modified.** All new tracks use `addTrackToMidiData()`.
 
-*   **`gen/generateBassLineForSong.js`**: This module generates the bassline for the song. It uses a sophisticated algorithm to create a bassline that is both rhythmically and harmonically interesting.
-*   **`gen/bass-pitch-selector.js`**: This module contains the logic for selecting the pitches for the bassline. It uses a weighted random selection process to choose notes that are harmonically appropriate and create a smooth bassline.
-*   **`gen/melody-generator.js`**: This module generates the melody for the song.
-*   **`gen/generateVocalLineForSong.js`**: This module generates a vocal line for the song.
-*   **`gen/generateDrumTrackForSong.js`**: This module generates the drum track for the song.
+### File map
 
-### Library Modules
+```
+index.html                        # Entry point, all <script> tags in dependency order
 
-*   **`lib/theory-helpers.js`**: This module contains a collection of helper functions for performing music theory calculations, such as getting the notes of a chord or a scale.
-*   **`lib/config-music-data.js`**: This module contains the configuration data for the application, such as the available moods, tempos, and keys.
-*   **`lib/midiwriter.js`**: This is an external library that is used to create the MIDI files.
+lib/
+  config-music-data.js            # TICKS_PER_QUARTER_NOTE_REFERENCE=128, NOTE_NAMES,
+                                  # INSTRUMENT_MAP, QUALITY_DEFS, scales, MOOD_PROFILES,
+                                  # SONG_STRUCTURE_TEMPLATES, possibleKeysAndModes
+  theory-helpers.js               # getChordRootAndType(), getNotesForChord(),
+                                  # getWeightedRandom(), humanizeVelocity(),
+                                  # hashStringToSeed(), mulberry32() seeded PRNG
+  harmonic-patterns-config.js     # Chord progression patterns per mood/section
+  passing-chords-config.js        # Passing chord rules
+  modal-interchange.js            # getInterchangeChords() — wrapped in try/catch
+  drum-patterns-library.js        # Main drum pattern library (Rock/Pop/Funk/Metal/Electronic)
+  drum-patterns-extra.js          # Additional patterns
+  rhythm-patterns.js / .json      # Rhythmic figures for melody/bass
+  vocal_profiles.js               # Vocal style profiles
+  chord-renderer.js               # SVG chord diagram rendering, fetchChordVoicings()
+  scale-renderer.js               # SVG fretboard + piano keyboard
+  arpeggiator.js                  # Arpeggio pattern library and generator
+  song-structures.json            # Loaded async via loadSongStructures()
+  chance.min.js                   # External: weighted random utility
 
-## Future Development
+gen/
+  melody-generator.js             # Melody, section-aware rhythm density
+  generateVocalLineForSong.js     # Vocal line, max 2 consecutive pauses
+  generateBassLineForSong.js      # Bass: Pattern / Walking / Generative modes
+  bass-pitch-selector.js          # Bass pitch selection logic
+  generateDrumTrackForSong.js     # Drums, energy arc, section dynamics
+  generatePadForTheSong.js        # Sustained chord pad
+  generateCountermelodyForSong.js # Secondary melodic line (MIDI only, not in preview)
+  generateTextureForSong.js       # Shimmering high-octave pad (MIDI only)
+  generateDronesForSong.js        # Sustained root drone (MIDI only)
+  generateOrnamentForSong.js      # Trills/grace notes, scale-aware (MIDI only)
+  generateMiasmaticForSong.js     # Vocal riff patterns (MIDI only)
+  generatePercussionForSong.js    # Percussion layer ch.10 (MIDI only)
+  generateGlitchFxForSong.js      # Glitch effects (MIDI only)
+  phalbo-title-generator.js       # Dada/surrealist title generator, multilingual
 
-Here is a list of potential improvements and new features for future versions of CapricEngine:
+main/
+  app-song-generation.js          # Core orchestration: generateSongArchitecture(),
+                                  # generateChordsForSection(), progressionCache,
+                                  # normalizeChordNameToSharps(), getCleanSectionName()
+  app-midi-export.js              # MIDI file creation — do not touch core logic
+                                  # addTrackToMidiData() for new tracks
+  app-ui-render.js                # Song output rendering, chord glossary (section-grouped),
+                                  # scale display, section cards with per-section MIDI buttons
+  app-setup.js                    # Init, dropdown population, attachActionListenersGlobal(),
+                                  # all button event listeners, handleSave*, handleGenerate*
+  app-audio-playback.js           # Tone.js preview: initAudioEngine(),
+                                  # scheduleFromChordSlots(), playPreview(), stopPreview()
+                                  # Connected generators: Pad, Melody, Bass, Drums, Vocals only
 
-### 1. Humanization and Dynamics
+style/
+  core-layout.css                 # Page structure, grid, header, responsive breakpoints
+  components.css                  # Buttons, cards, badges, chord glossary, section blocks
+  theme-visuals.css               # Colors, fonts, animations, transitions
+                                  # Palette: bg #0F1117, surface #1A1D27, border #2A2D3A,
+                                  # text #F0EEE8, secondary #8A8FA8,
+                                  # accent #7C6AF7, warm #E8A24A
+                                  # Fonts: "DM Serif Display" (logo/title), "Inter" (UI)
+```
 
-*   **Centralized Velocity Humanization:** Introduce a `humanizeVelocity(base = 80, range = 10)` function to be used across all generators (melody, bass, drums, vocals). This function should not only add randomness but also incorporate musical logic, such as accenting strong beats, creating crescendos/decrescendos, and generating ghost notes.
-*   **Micro-timing Adjustments:** Introduce subtle variations in the `startTick` of notes (e.g., +/- 5 ticks) to create a more human-like groove and swing feel.
+---
 
-### 2. Expanded Rhythmic and Harmonic Variety
+## Key systems
 
-*   **Advanced Arpeggios:** Create an `ARPEGGIO_PATTERNS` library with a variety of arpeggio patterns (e.g., root-fifth-third-octave, minor-7th, pentatonic, dominant-tension). The generator will then probabilistically select from this library to create more interesting and varied arpeggios for the bass and rhythm chords.
-*   **Expanded Bass Rhythmic Patterns:** Continue to expand the `BASS_RHYTHMIC_PATTERNS` library with more genre-specific patterns (e.g., funk, reggae, disco, alt-rock) to increase the rhythmic variety of the basslines.
+### Seed system (title-derived)
+`phalbo-title-generator.js` generates the song title first. `hashStringToSeed(title)` (djb2) in `theory-helpers.js` derives a numeric seed. `mulberry32(seed)` provides the seeded PRNG used by all generators. Same title = same song always. The seed is displayed as a base-36 Song ID (e.g. "X7K2-39MQ-ALFA") in the UI and in the PDF. **All generation logic must use the seeded PRNG — no bare `Math.random()` in gen/ or main/app-song-generation.js.**
 
-### 3. Generative Basslines
+### Section caching (progressionCache)
+`app-song-generation.js` maintains a `progressionCache` keyed by `cleanSectionName` (e.g. "verse", "chorus"). Repeated sections (Verse 2, Chorus 2) reuse the cached chord progression. All generators extend this pattern for their own output: melody contour, vocal rhythm, drum patterns are cached per clean section name and reused with only micro-variations.
 
-*   **Generative Bass Mode:** Add a "GENERATIVE" mode to the bassline generator that creates note durations based on weighted probabilities (e.g., 70% = 1 beat, 20% = 0.5 beats, 10% = 2 beats or legato). This will create more unpredictable and organic basslines.
-*   **Intelligent Walking Basslines:** Implement a `generateWalkingLineToNextRoot()` function that connects the current root note to the next one with a series of diatonic or chromatic passing notes. This will be particularly useful for creating smooth transitions in bridges and verses.
+### Energy arc
+Each section in the song structure carries `energyLevel` (0.0–1.0). Intro ramps 0.2→0.7, Verse=0.6, PreChorus=0.75, Chorus=1.0, Bridge=0.5, Outro ramps 0.7→0.2. Generators use energyLevel to gate note density and velocity ceiling. Drum kit: Intro bar 1 = kick only, bar 2 = kick+snare, bar 3 = full kit; Outro reverses.
 
-### 4. Expanded Song Structures
+### Humanization
+`humanizeVelocity(base, range, beatPosition)` in `theory-helpers.js`. beatPosition=0 adds +8 accent, beatPosition=0.5 subtracts 5. Returns clamped [20–127]. Used by all generators — no hardcoded velocities in gen/.
 
-*   **More Structure Templates:** Increase the number of available song structure templates from 10 to 20.
-*   **Named and Categorized Structures:** Each structure template should have a descriptive name (e.g., "Emotive Ballad," "Riff & Release," "Funk Jam") and be categorized by mood or genre in the UI to make it easier for users to find the structure they're looking for.
+### Audio preview (Tone.js)
+Loaded from CDN: `https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js`. If CDN fails, preview buttons are hidden silently and MIDI export continues normally. Play button must call `Tone.start()` (browser autoplay policy). Stop calls `Tone.Transport.stop()` + `Tone.Transport.cancel()` + position reset. On re-generate, scheduler fully disposed and reinitialized. Only 5 generators connected to preview — do not add more (audio muddiness).
 
-### 5. Improved Melody and Vocal Lines
+### PDF export
+Uses jsPDF (text/layout) + html2canvas (chord SVG diagrams only, `backgroundColor: '#FFFFFF'` forced). Never screenshots the app UI. Structure: header block (title, key, BPM, mood, Song ID, timestamp) → song structure text → section-grouped chord glossary with captured SVG diagrams. White background throughout. Filename: `[song-title]-CE52.pdf`.
 
-*   **Vocal Articulation and Dynamics:** Add more realistic variations in velocity to the vocal lines, with accents on the beginning and end of phrases.
-*   **More Varied Vocal Rhythms:** Reduce the number of forced repetitions and introduce more natural-sounding pauses to make the vocal lines less monotonous.
-*   **Contour-Based Melodies:** Implement support for generating melodies based on predefined contours (e.g., rising, falling, arch).
+### INSTRUMENT_MAP (lib/config-music-data.js)
+```js
+Pad:           { program: 89,  channel: 1  }
+Melody:        { program: 80,  channel: 2  }
+Vocal:         { program: 54,  channel: 3  }
+Bass:          { program: 33,  channel: 4  }
+Countermelody: { program: 6,   channel: 5  }
+Texture:       { program: 99,  channel: 6  }
+Ornament:      { program: 45,  channel: 7  }
+Miasmatic:     { program: 81,  channel: 8  }
+Drones:        { program: 95,  channel: 9  }
+GlitchFx:     { program: 103, channel: 11 }
+Arpeggio:      { program: 98,  channel: 12 }
+Drums:         { program: 0,   channel: 10 }  // ch.10 always
+Percussion:    { program: 0,   channel: 10 }  // ch.10 always
+```
 
-### 6. Humanized Drumming
+### Bass modes
+- **Pattern** (default): existing pattern-based generation
+- **Walking**: `generateWalkingLineToNextRoot()` fills last beat of each slot with diatonic/chromatic transition to next root
+- **Generative**: duration probabilities 70%=1beat / 20%=0.5beat / 10%=2beats; notes: root 40% / fifth 25% / third 20% / passing 15%
+- **Random**: one of the three above picked at generation time using song seed
 
-*   **Hi-Hat Dynamics:** Introduce variations in hi-hat velocity to create a more realistic pop groove.
-*   **Snare and Kick Variations:** Add subtle variations in the timing and velocity of snare and kick hits.
-*   **Ghost Notes and Backbeat Accents:** Incorporate ghost notes and accents on the backbeat to create more dynamic and interesting drum patterns.
+### Title generator
+`phalbo-title-generator.js` — Dada/surrealist style. "Phalbo" appears in ~65% of titles. Multilingual pools: IT (notturno, furioso, dolce…), FR (lumière, brume, éclat…), DE (Sehnsucht, Sturm, Nacht…). 60% of titles include at least one non-English word. 15% chance of two-line title with subtitle in a different language.
 
-### 7. User Experience and Exporting
+---
 
-*   **In-Browser MIDI Preview:** Allow users to preview the generated tracks in the browser using the Web Audio API and a SoundFont or a library like `tone.js`.
-*   **MusicXML Export:** Consider adding the ability to export the generated music as MusicXML files, which can be imported into a wide range of notation software.
-*   **Custom Presets:** Allow users to save their own custom patterns and presets for future use.
+## UI conventions
+
+- **Section color coding**: Intro #4A7FA5 · Verse #5A9A6E · Chorus #9A5A9A · Bridge #A57A4A · Outro #5A7AA5 · Solo #A55A5A · PreChorus: intermediate between Verse and Chorus
+- **Button groups** (bottom of page, post-generation):
+  - MAIN GENERATORS: Preview · Stop · Pad · Arpeggiator · Inspiration (Melody) · Vocals · Bass
+  - EXTRA GENERATORS: Countermelody · Texture · Ornament · Miasmatic · Drones · Percussion · Glitch FX
+  - EXPORT: Save Song Data · Save PDF
+- **Dot indicators**: grey = generator not run, green = active in Tone.js preview (Pad/Melody/Bass/Drums/Vocals only)
+- **Header**: CapricEngine SVG logo ~80px desktop / 56px mobile, "v5.2" pill badge inline, "Create musical architectures" tagline, max 64px total header height
+- **Chord tooltip** (pure CSS, no JS): quality name · intervals · key function. Triggered on hover over chord name text.
+
+---
+
+## Deployment
+
+**Requirements**: PHP 7.4+, Apache with mod_rewrite + mod_headers + mod_deflate. No npm/composer/build.
+
+The included `.htaccess` handles: mod_rewrite (DirectoryIndex index.html), cache headers (JS/CSS/JSON = 1 week, PHP = no-cache), CORS for get_chord_data.php (same origin), gzip compression.
+
+**Subdirectory install**: update the fetch base path in `lib/chord-renderer.js` → `fetchChordVoicings()`.
+
+**Offline / no PHP**: replace fetch call in `lib/chord-renderer.js` with a static JSON lookup from `lib/chord-db/chords-static.json` (key format: `"Root_suffix"`).
+
+---
+
+## Development rules (for Claude Code sessions)
+
+1. **No npm/node/build step.** All JS via `<script>` tags. Dependency order in index.html is load-order-sensitive.
+2. **Never modify `mainChordSlots` structure or `app-midi-export.js` core logic.**
+3. **Never use bare `Math.random()` in generation logic** — use `mulberry32` seeded PRNG from theory-helpers.js.
+4. **Each feature must degrade gracefully** if its CDN dependency (Tone.js, jsPDF, html2canvas) fails to load.
+5. **Preserve existing Italian comments** in the codebase. Write new comments in English.
+6. **Every commit must leave the app in a working state.**
+7. **Commit format**: `[CE5.2] Group N — short description`
+8. **Version string "v5.2"** must appear in: `<title>` tag, header UI element, PDF footer, README.
+9. **Audio preview**: do not connect additional generators beyond the current 5 (Pad/Melody/Bass/Drums/Vocals). MIDI-only generators are: Arpeggiator, Countermelody, Texture, Drones, Ornament, Miasmatic, Percussion, GlitchFx.
+10. **CSS changes** go in `style/` only. Never embed styles in JS or HTML.
+
+---
+
+## Potential future improvements
+
+- MusicXML export (importable in notation software)
+- Custom presets: save user's favorite mood/key/structure combos
+- Micro-timing humanization: ±5 tick `startTick` variation for groove/swing feel
+- Expanded bass rhythm patterns: funk, reggae, disco, alt-rock genres
+- Contour-based melody generation: predefined rising/falling/arch shapes
+- More song structure templates (target: 30+), categorized by genre in UI
+- SoundFont-based preview: replace synth fallbacks with GM SoundFont via MIDI.js for realistic instrument sounds
+- Mobile "Quick Generate" button: one-tap full-random generation for screens < 480px
+- Chord progression export as plain text / JSON for external use
